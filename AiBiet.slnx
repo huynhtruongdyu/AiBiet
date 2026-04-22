@@ -5,6 +5,14 @@
     <File Path="Directory.Packages.props" />
   </Folder>
   <Folder Name="/src/">
+    <Project Path="src/AiBiet.Application/AiBiet.Application.csproj" />
     <Project Path="src/AiBiet.CLI/AiBiet.CLI.csproj" />
+    <Project Path="src/AiBiet.Core/AiBiet.Core.csproj" />
+    <Project Path="src/AiBiet.Infrastructure/AiBiet.Infrastructure.csproj" />
+    <Project Path="src/AiBiet.Providers.Gemini/AiBiet.Providers.Gemini.csproj" />
+    <Project Path="src/AiBiet.Providers.Ollama/AiBiet.Providers.Ollama.csproj" />
+    <Project Path="src/AiBiet.Providers.OpenAI/AiBiet.Providers.OpenAI.csproj" />
+    <Project Path="src/AiBiet.SharedKernel/AiBiet.SharedKernel.csproj" />
+    <Project Path="src/AiBiet.Tools.Coding/AiBiet.Tools.Coding.csproj" />
   </Folder>
 </Solution>
