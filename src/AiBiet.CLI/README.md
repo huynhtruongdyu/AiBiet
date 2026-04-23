@@ -54,16 +54,31 @@ aibiet
 
 ## Configuration
 
-Upon the first run, AiBiet automatically creates a configuration file in your user profile directory (`~/.aibiet/config.json` on Linux/macOS, or `%USERPROFILE%\.aibiet\config.json` on Windows).
+AiBiet stores its configuration in your user profile directory:
+- **Windows:** `%USERPROFILE%\.aibiet\config.json`
+- **Linux/macOS:** `~/.aibiet/config.json`
 
-By default, it looks like this:
+On the first run, it automatically creates a default configuration file and a JSON schema (`config.schema.json`) to provide IntelliSense if you choose to edit the file manually in an editor like VS Code.
+
+### Default Structure
 ```json
 {
-  "DefaultProvider": "ollama"
+  "$schema": "./config.schema.json",
+  "DefaultProvider": "ollama",
+  "Providers": {
+    "ollama": {
+      "ApiUrl": "http://localhost:11434"
+    },
+    "openai": {
+      "ApiUrl": "https://api.openai.com/v1",
+      "ApiKey": ""
+    },
+    "gemini": {
+      "ApiKey": ""
+    }
+  }
 }
 ```
-
-You can edit this file to change the default AI provider used by commands. Currently, it supports the `DefaultProvider` property. Additional configuration options for API keys and models will be available in future releases.
 
 ---
 
@@ -90,23 +105,36 @@ aibiet models
 ```
 
 **Manage Configuration:**
-Show current config, start interactive setup, or clear settings.
-```bash
-# Show current config
-aibiet config
+You can manage your settings interactively or via command-line flags.
 
-# Interactive setup for a specific provider
-aibiet config openai
+*   **Interactive Setup:** The easiest way to configure a provider.
+    ```bash
+    # Configure OpenAI interactively
+    aibiet config openai
+    ```
+*   **View Current Config:**
+    ```bash
+    aibiet config
+    ```
+*   **Set via Flags:**
+    ```bash
+    # Set Ollama URL and make it default
+    aibiet config ollama --url http://localhost:11434 --default
 
-# Set values via flags
-aibiet config ollama --url http://localhost:11434 --default
+    # Set OpenAI API Key
+    aibiet config openai --key your-api-key-here
 
-# Clear a specific provider
-aibiet config openai --clear
+    # Set secret key (if required by provider)
+    aibiet config custom-provider --secret your-secret-key
+    ```
+*   **Clear Configuration:**
+    ```bash
+    # Clear a specific provider
+    aibiet config openai --clear
 
-# Clear all configurations (with confirmation)
-aibiet config --clear
-```
+    # Reset everything (requires confirmation)
+    aibiet config --clear
+    ```
 
 ### Developer Utilities
 
