@@ -37,27 +37,32 @@ The solution is divided into the following layers and projects:
 
 ## Installation
 
-### One-Liner Install (No Clone Required)
-Run this command in PowerShell to download and install AiBiet automatically:
+### One-Liner Install (No .NET Required)
+Run this command in PowerShell to automatically download and install the latest pre-built native binary:
 
 ```powershell
 iex (irm https://raw.githubusercontent.com/huynhtruongdyu/AiBiet/main/scripts/install-remote.ps1)
 ```
 
-### Local Install (If Cloned)
-If you already have the repository cloned, run:
+This will:
+- Download the latest `aibiet.exe` from [GitHub Releases](https://github.com/huynhtruongdyu/AiBiet/releases)
+- Install it to `%USERPROFILE%\.aibiet\bin\`
+- Automatically add it to your `PATH`
+
+> [!TIP]
+> If you get an error about scripts being disabled, run: `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process` then try again.
+
+### Developer Install (If Cloned — Requires .NET 10 SDK)
+If you have the repository cloned and want to build from source:
 
 ```powershell
 .\scripts\install.ps1
 ```
 
-> [!TIP]
-> If you get an error about scripts being disabled, run: `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process` then try again.
-
 ### Uninstallation
-To remove the tool and its configuration:
+To remove the tool and optionally its configuration:
 
-**One-Liner (No Clone Required):**
+**One-Liner:**
 ```powershell
 iex (irm https://raw.githubusercontent.com/huynhtruongdyu/AiBiet/main/scripts/uninstall-remote.ps1)
 ```

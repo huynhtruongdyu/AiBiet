@@ -1,0 +1,122 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"   # Triggers on version tags like v0.1.0, v1.2.3
+
+permissions:
+  contents: write  # Required to create GitHub Releases and upload assets
+
+jobs:
+  build:
+    name: Build (${{ matrix.rid }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            rid: win-x64
+            artifact: aibiet.exe
+            archive: aibiet-win-x64.zip
+          - os: ubuntu-latest
+            rid: linux-x64
+            artifact: aibiet
+            archive: aibiet-linux-x64.tar.gz
+          - os: macos-latest
+            rid: osx-arm64
+            artifact: aibiet
+            archive: aibiet-osx-arm64.tar.gz
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      # Native AOT on Linux requires clang/musl
+      - name: Install native build tools (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get install -y clang zlib1g-dev
+
+      # Native AOT on macOS requires Xcode build tools
+      - name: Install native build tools (macOS)
+        if: runner.os == 'macOS'
+        run: xcode-select --install || true
+
+      - name: Get version from tag
+        id: version
+        shell: bash
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
+
+      - name: Publish Native AOT binary
+        shell: bash
+        run: |
+          dotnet publish src/AiBiet.CLI/AiBiet.CLI.csproj \
+            -c Release \
+            -r ${{ matrix.rid }} \
+            --self-contained true \
+            -o ./publish/${{ matrix.rid }} \
+            /p:Version=${{ steps.version.outputs.VERSION }} \
+            /p:PublishAot=true \
+            /p:PublishSingleFile=true \
+            /p:DebugType=None \
+            /p:DebugSymbols=false
+
+      # Rename the output binary to a clean name 'aibiet' or 'aibiet.exe'
+      - name: Rename binary (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $src = Get-ChildItem ./publish/${{ matrix.rid }} -Filter "*.exe" | Select-Object -First 1
+          Rename-Item $src.FullName "aibiet.exe"
+
+      - name: Rename binary (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          src=$(find ./publish/${{ matrix.rid }} -maxdepth 1 -type f ! -name "*.so" ! -name "*.dylib" | head -n 1)
+          mv "$src" ./publish/${{ matrix.rid }}/aibiet
+
+      # Package as zip (Windows)
+      - name: Archive (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: Compress-Archive -Path ./publish/${{ matrix.rid }}/aibiet.exe -DestinationPath ${{ matrix.archive }}
+
+      # Package as tar.gz (Unix)
+      - name: Archive (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          chmod +x ./publish/${{ matrix.rid }}/aibiet
+          tar -czf ${{ matrix.archive }} -C ./publish/${{ matrix.rid }} aibiet
+
+      - name: Upload archive as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.archive }}
+          path: ${{ matrix.archive }}
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+          merge-multiple: true
+
+      - name: Create Release and upload assets
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: "AiBiet ${{ github.ref_name }}"
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          generate_release_notes: true
+          files: ./artifacts/*
