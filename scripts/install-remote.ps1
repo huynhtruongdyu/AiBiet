@@ -5,10 +5,19 @@
 #   iex (irm https://raw.githubusercontent.com/huynhtruongdyu/AiBiet/main/scripts/install-remote.ps1) -Version v0.1.1
 #   iex (irm https://raw.githubusercontent.com/huynhtruongdyu/AiBiet/main/scripts/install-remote.ps1) -PreRelease
 
+# Support both direct execution and iex (irm ...) pattern
 param(
-    [string]$Version = "",
-    [switch]$PreRelease
+    [string]$Version = $env:AIBIET_INSTALL_VERSION,
+    [switch]$PreRelease = [bool]$env:AIBIET_INSTALL_PRERELEASE
 )
+
+# If called via iex (irm ...), parameters might not work, so check env vars
+if (-not $Version -and $args -match '-Version') {
+    $Version = ($args -split '-Version')[1].Trim().Split()[0].Trim('-').Trim()
+}
+if (-not $PreRelease -and ($args -match '-PreRelease' -or $args -match '-prerelease')) {
+    $PreRelease = $true
+}
 
 $ErrorActionPreference = "Stop"
 
