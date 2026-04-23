@@ -1,82 +1,139 @@
 # AiBiet
 
-**AiBiet** is a modular AI-powered Command Line Interface (CLI) assistant and developer utility tool. 
+**AiBiet** (meaning *"AI knows?"* in Vietnamese) is a modular, AI-powered Command Line Interface (CLI) assistant and developer utility tool.
 
-Built with C# and `Spectre.Console`, it offers a rich and interactive terminal experience. The application aims to provide a unified interface for interacting with various AI models (like Ollama, Gemini, and OpenAI) while also providing built-in everyday developer utilities.
+Built with C# and `Spectre.Console`, it offers a rich and interactive terminal experience. AiBiet provides a unified interface for interacting with various AI models (Ollama, Gemini, OpenAI) while also including a suite of built-in everyday developer utilities — all from one fast, standalone executable.
 
-## High-Level Architecture
+---
 
-AiBiet is built following **Clean Architecture** principles. This ensures separation of concerns, high testability, and a loosely coupled design where the core logic is independent of UI or external services.
+## ✨ Key Features
 
-The solution is divided into the following layers and projects:
+| Command | Description | Status |
+|---|---|---|
+| `aibiet ask` | Ask a model a single question | 🚧 In Progress |
+| `aibiet chat` | Start an interactive chat session | 🚧 In Progress |
+| `aibiet models` | List available models from configured providers | 🚧 In Progress |
+| `aibiet config` | View and manage AI provider configuration interactively | ✅ Ready |
+| `aibiet doctor` | Health-check your system, providers, and connectivity | ✅ Ready |
+| `aibiet utils guid` | Generate one or more GUIDs/UUIDs with formatting options | ✅ Ready |
 
-### 1. Presentation Layer
-* **`AiBiet.CLI`**: The main entry point of the application. It uses `Spectre.Console.Cli` to handle command routing (`ask`, `chat`, `models`, `utils`), argument parsing, and rendering beautiful terminal outputs.
+---
 
-### 2. Core & Domain Layer
-* **`AiBiet.Core`**: The heart of the application. It contains domain entities, abstractions, and core business rules. It has no dependencies on other projects.
-* **`AiBiet.SharedKernel`**: Contains common types, constants, and utilities that can be shared across the entire solution.
-
-### 3. Application Layer
-* **`AiBiet.Application`**: Contains the application's use cases and orchestration logic. It defines interfaces that the Infrastructure layer will implement.
-
-### 4. Infrastructure & Providers Layer
-* **`AiBiet.Infrastructure`**: Implements the abstractions defined in the Core and Application layers. This includes things like configuration management, local file system access, etc.
-* **`AiBiet.Providers.Ollama`**: Concrete implementation for integrating with local Ollama instances.
-* **`AiBiet.Providers.Gemini`**: Concrete implementation for integrating with Google Gemini APIs.
-* **`AiBiet.Providers.OpenAI`**: Concrete implementation for integrating with OpenAI APIs.
-
-### 5. Tools Layer
-* **`AiBiet.Tools.Coding`**: A dedicated project containing tools and capabilities that the AI can use, specifically geared towards software development and coding tasks.
-
-## Key Features (Ongoing Development)
-* **`ask`**: Ask a model a quick question and get a single response.
-* **`chat`**: Enter an interactive, continuous chat session with an AI model.
-* **`models`**: List and manage available models from the configured providers.
-* **`utils`**: A suite of handy developer tools (e.g., GUID/UUID generation).
-
-## Installation
+## 🚀 Installation
 
 ### One-Liner Install (No .NET Required)
-Run this command in PowerShell to automatically download and install the latest pre-built native binary:
+
+Open **PowerShell** and run:
 
 ```powershell
 iex (irm https://raw.githubusercontent.com/huynhtruongdyu/AiBiet/main/scripts/install-remote.ps1)
 ```
 
 This will:
-- Download the latest `aibiet.exe` from [GitHub Releases](https://github.com/huynhtruongdyu/AiBiet/releases)
+- Fetch the latest release from [GitHub Releases](https://github.com/huynhtruongdyu/AiBiet/releases)
+- Download `aibiet.exe` (a self-contained binary — no runtime needed)
 - Install it to `%USERPROFILE%\.aibiet\bin\`
-- Automatically add it to your `PATH`
+- Add that directory to your `PATH` automatically
 
 > [!TIP]
-> If you get an error about scripts being disabled, run: `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process` then try again.
+> If you get an error about scripts being disabled, run first:
+> ```powershell
+> Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
+> ```
 
-### Developer Install (If Cloned — Requires .NET 10 SDK)
-If you have the repository cloned and want to build from source:
+### Verify Installation
+
+Open a **new terminal** and run:
 
 ```powershell
-.\scripts\install.ps1
+aibiet
 ```
 
-### Uninstallation
-To remove the tool and optionally its configuration:
+You should see the AiBiet splash screen and command list.
 
-**One-Liner:**
+### Uninstallation
+
 ```powershell
 iex (irm https://raw.githubusercontent.com/huynhtruongdyu/AiBiet/main/scripts/uninstall-remote.ps1)
 ```
 
-**Local (If Cloned):**
+---
+
+## 🛠️ Developer Setup (Requires .NET 10 SDK)
+
+If you have the repository cloned and want to build from source:
+
 ```powershell
-.\scripts\uninstall.ps1
-```
+# Build and install globally
+.\scripts\install.ps1
 
-### Manual Run (Development)
-To run the application directly without installing:
-
-```bash
+# Run directly without installing
 dotnet run --project src/AiBiet.CLI/AiBiet.CLI.csproj
+
+# Build a self-contained standalone binary
+.\scripts\publish.ps1
+# or for a specific platform:
+.\scripts\publish.ps1 -Runtime linux-x64
+.\scripts\publish.ps1 -Runtime osx-arm64
 ```
 
-For more detailed instructions, see the [CLI Documentation](src/AiBiet.CLI/README.md).
+---
+
+## ⚙️ Configuration
+
+AiBiet stores its configuration at `%USERPROFILE%\.aibiet\config.json` (Windows) or `~/.aibiet/config.json` (Linux/macOS).
+
+Set up a provider interactively:
+
+```powershell
+aibiet config ollama
+aibiet config openai
+aibiet config gemini
+```
+
+Or view your current config:
+
+```powershell
+aibiet config
+```
+
+---
+
+## 🏥 Health Check
+
+Run `aibiet doctor` to diagnose your setup:
+
+```
+✔ Configuration File:    Found at C:\Users\you\.aibiet\config.json
+✔ Internet Connectivity: Online and reachable.
+✘ Ollama Service:        Not found at http://localhost:11434. Is Ollama running?
+✔ Provider: openai:      API endpoint is reachable.
+✘ Provider: gemini:      API Key is missing. Run: aibiet config gemini
+```
+
+---
+
+## 🏗️ Architecture
+
+AiBiet is built following **Clean Architecture** principles — separation of concerns, high testability, and a loosely coupled design where core logic is independent of UI or external services.
+
+| Layer | Project | Description |
+|---|---|---|
+| Presentation | `AiBiet.CLI` | CLI entry point using `Spectre.Console.Cli` |
+| Core | `AiBiet.Core` | Domain entities, abstractions, core business rules |
+| Shared | `AiBiet.SharedKernel` | Common types and utilities |
+| Application | `AiBiet.Application` | Use cases and orchestration logic |
+| Infrastructure | `AiBiet.Infrastructure` | Config management, file system access |
+| Providers | `AiBiet.Providers.*` | Ollama, OpenAI, Gemini integrations |
+| Tools | `AiBiet.Tools.Coding` | AI-powered coding utilities |
+
+---
+
+## 📦 Release & CI/CD
+
+Releases are automated via **GitHub Actions**. Every version tag (e.g. `v1.0.0`) triggers:
+
+1. Build of self-contained binaries for **Windows**, **Linux**, and **macOS**
+2. Automatic creation of a [GitHub Release](https://github.com/huynhtruongdyu/AiBiet/releases) with downloadable assets
+
+For detailed CLI usage and configuration options, see the [CLI Documentation](src/AiBiet.CLI/README.md).
