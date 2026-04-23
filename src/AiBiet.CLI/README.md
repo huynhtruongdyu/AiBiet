@@ -32,6 +32,16 @@ You can install or update AiBiet directly without cloning the repository by runn
 iex (irm https://raw.githubusercontent.com/huynhtruongdyu/AiBiet/main/scripts/install-remote.ps1)
 ```
 
+**Install a specific version:**
+```powershell
+iex (irm https://raw.githubusercontent.com/huynhtruongdyu/AiBiet/main/scripts/install-remote.ps1) -Version v0.1.1
+```
+
+**Install pre-release version:**
+```powershell
+iex (irm https://raw.githubusercontent.com/huynhtruongdyu/AiBiet/main/scripts/install-remote.ps1) -PreRelease
+```
+
 ---
 
 If you have the repository cloned, run the installer from the **repository root**:

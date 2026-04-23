@@ -1,6 +1,14 @@
 # AiBiet Remote Installer (No .NET Required)
 # Downloads the latest pre-built native binary from GitHub Releases.
-# Usage: iex (irm https://raw.githubusercontent.com/huynhtruongdyu/AiBiet/main/scripts/install-remote.ps1)
+# Usage:
+#   iex (irm https://raw.githubusercontent.com/huynhtruongdyu/AiBiet/main/scripts/install-remote.ps1)
+#   iex (irm https://raw.githubusercontent.com/huynhtruongdyu/AiBiet/main/scripts/install-remote.ps1) -Version v0.1.1
+#   iex (irm https://raw.githubusercontent.com/huynhtruongdyu/AiBiet/main/scripts/install-remote.ps1) -PreRelease
+
+param(
+    [string]$Version = "",
+    [switch]$PreRelease
+)
 
 $ErrorActionPreference = "Stop"
 
@@ -13,15 +21,37 @@ Write-Host "----------------------------------" -ForegroundColor Cyan
 Write-Host "   AiBiet Online Installer        " -ForegroundColor Cyan
 Write-Host "----------------------------------" -ForegroundColor Cyan
 
-# 1. Fetch latest release info from GitHub API
-Write-Host "[1/4] Fetching latest release..." -ForegroundColor Green
-$releaseUrl = "https://api.github.com/repos/$Repo/releases/latest"
-try {
-    $release = Invoke-RestMethod -Uri $releaseUrl -Headers @{ "User-Agent" = "AiBiet-Installer" }
-} catch {
-    Write-Host "[ERROR] Could not fetch release info from GitHub." -ForegroundColor Red
-    Write-Host "Check your internet connection or visit: https://github.com/$Repo/releases"
-    exit 1
+# 1. Fetch release info from GitHub API
+Write-Host "[1/4] Fetching release..." -ForegroundColor Green
+
+if ($Version) {
+    $releaseUrl = "https://api.github.com/repos/$Repo/releases/tags/$Version"
+} elseif ($PreRelease) {
+    $releasesUrl = "https://api.github.com/repos/$Repo/releases?per_page=100"
+    try {
+        $releases = Invoke-RestMethod -Uri $releasesUrl -Headers @{ "User-Agent" = "AiBiet-Installer" }
+        $release = $releases | Where-Object { $_.prerelease -eq $true } | Select-Object -First 1
+        if (-not $release) {
+            Write-Host "[ERROR] No pre-release found." -ForegroundColor Red
+            exit 1
+        }
+    } catch {
+        Write-Host "[ERROR] Could not fetch releases from GitHub." -ForegroundColor Red
+        Write-Host "Check your internet connection or visit: https://github.com/$Repo/releases"
+        exit 1
+    }
+} else {
+    $releaseUrl = "https://api.github.com/repos/$Repo/releases/latest"
+}
+
+if (-not $release) {
+    try {
+        $release = Invoke-RestMethod -Uri $releaseUrl -Headers @{ "User-Agent" = "AiBiet-Installer" }
+    } catch {
+        Write-Host "[ERROR] Could not fetch release info from GitHub." -ForegroundColor Red
+        Write-Host "Check your internet connection or visit: https://github.com/$Repo/releases"
+        exit 1
+    }
 }
 
 $version = $release.tag_name

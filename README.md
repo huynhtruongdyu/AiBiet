@@ -35,6 +35,44 @@ This will:
 - Install it to `%USERPROFILE%\.aibiet\bin\`
 - Add that directory to your `PATH` automatically
 
+**Install a specific version:**
+```powershell
+iex (irm https://raw.githubusercontent.com/huynhtruongdyu/AiBiet/main/scripts/install-remote.ps1) -Version v0.1.1
+```
+
+**Install pre-release version:**
+```powershell
+iex (irm https://raw.githubusercontent.com/huynhtruongdyu/AiBiet/main/scripts/install-remote.ps1) -PreRelease
+```
+
+> [!TIP]
+> If you get an error about scripts being disabled, run first:
+> ```powershell
+> Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
+> ```
+
+### Verify Installation
+
+Open a **new terminal** and run:
+
+```powershell
+aibiet
+```
+
+You should see the AiBiet splash screen and command list.
+
+### Uninstallation
+
+```powershell
+iex (irm https://raw.githubusercontent.com/huynhtruongdyu/AiBiet/main/scripts/uninstall-remote.ps1)
+```
+
+This will:
+- Fetch the latest release from [GitHub Releases](https://github.com/huynhtruongdyu/AiBiet/releases)
+- Download `aibiet.exe` (a self-contained binary — no runtime needed)
+- Install it to `%USERPROFILE%\.aibiet\bin\`
+- Add that directory to your `PATH` automatically
+
 > [!TIP]
 > If you get an error about scripts being disabled, run first:
 > ```powershell
