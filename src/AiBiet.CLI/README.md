@@ -4,7 +4,7 @@ AiBiet (meaning "Who knows?" / "AI knows" in Vietnamese) is a CLI-first AI runti
 
 ## Features
 
-* **Unified AI Interface:** Chat and interact with various AI providers through a single tool.
+* **Unified AI Interface:** Chat and interact with various AI providers (Gemini, Ollama, OpenAI) through a single tool.
 * **Extensible Architecture:** Easily add new AI providers and agentic tools.
 * **Local Inference:** Built-in support for Ollama (local LLMs).
 * **Developer Utilities:** A collection of handy offline tools (like GUID generators, encoders, etc.).
@@ -130,7 +130,7 @@ On the first run, it automatically creates a default configuration file and a JS
 **Ask a question (Single-turn):**
 Send a prompt directly to an AI model and get an immediate response.
 ```bash
-aibiet ask -m ollama -p "Explain quantum computing in one sentence"
+aibiet ask -m gemini -p "Explain quantum computing in one sentence"
 ```
 
 **Start Interactive Chat:**

@@ -10,8 +10,8 @@ Built with C# and `Spectre.Console`, it offers a rich and interactive terminal e
 
 | Command | Description | Status |
 |---|---|---|
-| `aibiet ask` | Ask a model a single question | 🚧 In Progress |
-| `aibiet chat` | Start an interactive chat session | 🚧 In Progress |
+| `aibiet ask` | Ask a model a single question (Gemini ready) | ✅ Ready (Gemini) |
+| `aibiet chat` | Start an interactive chat session (Gemini ready) | ✅ Ready (Gemini) |
 | `aibiet models` | List available models from configured providers | 🚧 In Progress |
 | `aibiet config` | View and manage AI provider configuration interactively | ✅ Ready |
 | `aibiet doctor` | Health-check your system, providers, and connectivity | ✅ Ready |
