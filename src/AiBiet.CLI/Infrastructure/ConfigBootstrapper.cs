@@ -1,6 +1,8 @@
-using Microsoft.Extensions.Configuration;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+
+using Microsoft.Extensions.Configuration;
+
 
 namespace AiBiet.CLI.Infrastructure;
 
@@ -60,6 +62,10 @@ internal static class ConfigBootstrapper
                   "SecretKey": {
                     "type": "string",
                     "description": "The secret key for the provider"
+                  },
+                  "DefaultModel": {
+                    "type": "string",
+                    "description": "The default model to use for this provider"
                   }
                 }
               }
@@ -68,7 +74,8 @@ internal static class ConfigBootstrapper
           "additionalProperties": false
         }
         """;
-        
+
+
         await File.WriteAllTextAsync(schemaPath, schemaContent).ConfigureAwait(false);
 
         if (!File.Exists(configPath))
@@ -76,17 +83,20 @@ internal static class ConfigBootstrapper
             var defaultConfig = """
             {
               "$schema": "./config.schema.json",
-              "DefaultProvider": "ollama",
               "Providers": {
                 "ollama": {
-                  "ApiUrl": "http://localhost:11434"
+                  "ApiUrl": "http://localhost:11434",
+                  "DefaultModel": "llama3.2"
                 },
                 "openai": {
                   "ApiUrl": "https://api.openai.com/v1",
-                  "ApiKey": ""
+                  "ApiKey": "",
+                  "DefaultModel": "gpt-4o"
                 },
                 "gemini": {
-                  "ApiKey": ""
+                  "ApiUrl": "https://generativelanguage.googleapis.com/v1beta",
+                  "ApiKey": "",
+                  "DefaultModel": "gemini-2.0-flash"
                 }
               }
             }

@@ -2,8 +2,8 @@ using AiBiet.CLI.Commands;
 using AiBiet.CLI.Commands.Utils;
 using AiBiet.CLI.Infrastructure;
 using AiBiet.CLI.UI;
+using AiBiet.Core.Interfaces;
 
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 using Spectre.Console.Cli;
@@ -12,6 +12,16 @@ var appConfig = await ConfigBootstrapper.InitializeAsync().ConfigureAwait(false)
 
 var services = new ServiceCollection();
 services.AddSingleton(appConfig);
+services.AddHttpClient();
+
+// Register AI provider resolver (reads config at runtime)
+services.AddSingleton<AiProviderResolver>();
+services.AddTransient<IAiProvider>(sp =>
+{
+    var config = sp.GetRequiredService<AiBietConfig>();
+    var resolver = sp.GetRequiredService<AiProviderResolver>();
+    return resolver.Resolve(config);
+});
 
 var registrar = new TypeRegistrar(services);
 
@@ -22,10 +32,10 @@ app.Configure(config =>
     config.SetApplicationVersion(AppInfo.GetVersion());
 
     config.AddCommand<AskCommand>("ask")
-       .WithDescription("(Mocked) Ask a model a single question");
+       .WithDescription("Ask a model a single question");
 
     config.AddCommand<ChatCommand>("chat")
-        .WithDescription("(Mocked) Start interactive chat mode");
+        .WithDescription("Start an interactive chat session");
 
     config.AddCommand<ModelsCommand>("models")
         .WithDescription("(Mocked) List available models");
