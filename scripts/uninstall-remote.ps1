@@ -11,10 +11,21 @@ Write-Host "----------------------------------" -ForegroundColor Yellow
 Write-Host "   AiBiet Online Uninstaller      " -ForegroundColor Yellow
 Write-Host "----------------------------------" -ForegroundColor Yellow
 
-# 1. Remove the binary
+# 1. Uninstall .NET Global Tool
+Write-Host "[1/4] Checking for .NET Global Tool..." -ForegroundColor Green
+$dotnetTool = dotnet tool list -g 2>&1 | Select-String "aibiet.cli"
+if ($dotnetTool) {
+    Write-Host "  Found .NET Global Tool 'aibiet.cli'. Uninstalling..." -ForegroundColor Gray
+    dotnet tool uninstall -g aibiet.cli 2>&1 | Out-Null
+    Write-Host "  Removed .NET Global Tool." -ForegroundColor Gray
+} else {
+    Write-Host "  .NET Global Tool not found. Skipping." -ForegroundColor Gray
+}
+
+# 2. Remove the binary
 $binaryPath = Join-Path $InstallDir $BinaryName
 if (Test-Path $binaryPath) {
-    Write-Host "[1/3] Removing AiBiet binary..." -ForegroundColor Green
+    Write-Host "[2/4] Removing AiBiet binary..." -ForegroundColor Green
     try {
         Remove-Item $binaryPath -Force
         Write-Host "  Removed: $binaryPath" -ForegroundColor Gray
@@ -24,7 +35,7 @@ if (Test-Path $binaryPath) {
         Write-Host "  Please close any running instances of AiBiet and try again." -ForegroundColor Yellow
     }
 } else {
-    Write-Host "[1/3] AiBiet binary not found at $binaryPath. Skipping." -ForegroundColor Gray
+    Write-Host "[2/4] AiBiet binary not found at $binaryPath. Skipping." -ForegroundColor Gray
 }
 
 # Remove the bin directory if empty
@@ -32,8 +43,8 @@ if ((Test-Path $InstallDir) -and (Get-ChildItem $InstallDir -ErrorAction Silentl
     Remove-Item $InstallDir -Force -ErrorAction SilentlyContinue
 }
 
-# 2. Remove InstallDir from User PATH
-Write-Host "[2/3] Cleaning up PATH..." -ForegroundColor Green
+# 3. Remove InstallDir from User PATH
+Write-Host "[3/4] Cleaning up PATH..." -ForegroundColor Green
 $userPath = [System.Environment]::GetEnvironmentVariable("PATH", "User")
 if ($userPath -like "*$InstallDir*") {
     $newPath = ($userPath -split ";" | Where-Object { $_ -ne $InstallDir }) -join ";"
@@ -43,8 +54,8 @@ if ($userPath -like "*$InstallDir*") {
     Write-Host "  '$InstallDir' was not found in PATH. Skipping." -ForegroundColor Gray
 }
 
-# 3. Optionally remove config
-Write-Host "[3/3] Configuration cleanup..." -ForegroundColor Green
+# 4. Optionally remove config
+Write-Host "[4/4] Configuration cleanup..." -ForegroundColor Green
 if (Test-Path $ConfigDir) {
     Write-Host ""
     Write-Host "Configuration found at: $ConfigDir" -ForegroundColor Cyan
