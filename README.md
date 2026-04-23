@@ -51,6 +51,22 @@ If you already have the repository cloned, run:
 .\install.ps1
 ```
 
+> [!TIP]
+> If you get an error about scripts being disabled, run: `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process` then try again.
+
+### Uninstallation
+To remove the tool and its configuration:
+
+**One-Liner (No Clone Required):**
+```powershell
+iex (irm https://raw.githubusercontent.com/huynhtruongdyu/AiBiet/main/uninstall-remote.ps1)
+```
+
+**Local (If Cloned):**
+```powershell
+.\uninstall.ps1
+```
+
 ### Manual Run (Development)
 To run the application directly without installing:
 

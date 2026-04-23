@@ -19,6 +19,7 @@ var app = new CommandApp(registrar);
 app.Configure(config =>
 {
     config.SetApplicationName("aibiet");
+    config.SetApplicationVersion(AppInfo.GetVersion());
 
     config.AddCommand<AskCommand>("ask")
        .WithDescription("(Mocked) Ask a model a single question");
@@ -40,6 +41,11 @@ app.Configure(config =>
             .WithDescription("Generate one or more GUIDs/UUIDs");
     });
 });
+
+if (args.Length == 1 && (args[0] == "-v" || args[0] == "-V"))
+{
+    args = ["--version"];
+}
 
 if (args.Length == 0)
 {

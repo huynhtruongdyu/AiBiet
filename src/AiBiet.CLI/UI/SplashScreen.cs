@@ -20,14 +20,5 @@ internal static class SplashScreen
 
     }
 
-    private static string GetVersion()
-    {
-        var version = Assembly
-            .GetExecutingAssembly()
-            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
-            .InformationalVersion
-            ?? "unknown";
-
-        return version.Split('+')[0];
-    }
+    private static string GetVersion() => AppInfo.GetVersion();
 }

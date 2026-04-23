@@ -34,9 +34,7 @@ iex (irm https://raw.githubusercontent.com/huynhtruongdyu/AiBiet/main/install-re
 
 ---
 
-### Local Install (If Cloned)
-
-If you have the repository cloned, run:
+If you have the repository cloned, run the installer from the **repository root**:
 
 ```powershell
 .\install.ps1
@@ -47,6 +45,23 @@ If you have the repository cloned, run:
 
 ---
 
+### Uninstallation
+
+To remove the global tool and optionally delete configuration settings:
+
+**One-Liner (No Clone Required):**
+```powershell
+iex (irm https://raw.githubusercontent.com/huynhtruongdyu/AiBiet/main/uninstall-remote.ps1)
+```
+
+**Local (If Cloned):**
+Run from the **repository root**:
+```powershell
+.\uninstall.ps1
+```
+
+---
+
 ### Manual Installation
 If you prefer to do it manually, follow these steps:
 
@@ -54,20 +69,20 @@ If you prefer to do it manually, follow these steps:
 First, compile and package the CLI tool into a NuGet package:
 
 ```bash
-dotnet pack src/AiBiet.CLI/AiBiet.CLI.csproj -c Release
+dotnet pack AiBiet.CLI.csproj -c Release
 ```
 
 #### 2. Install the Tool
 Once packed, you can install it globally on your machine by pointing to the output directory:
 
 ```bash
-dotnet tool install --global --add-source ./src/AiBiet.CLI/bin/Release AiBiet.CLI
+dotnet tool install --global --add-source ./bin/Release AiBiet.CLI
 ```
 
 *Note: If you have previously installed it and want to update, use `dotnet tool update` instead.*
 
 ```bash
-dotnet tool update --global --add-source ./src/AiBiet.CLI/bin/Release AiBiet.CLI
+dotnet tool update --global --add-source ./bin/Release AiBiet.CLI
 ```
 
 ### 3. Verify Installation
