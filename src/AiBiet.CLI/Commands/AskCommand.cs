@@ -24,7 +24,6 @@ internal class AskCommand : Command<AskCommandSettings>
         AnsiConsole.MarkupLine($"[green]Model:[/] {settings.Model}");
         AnsiConsole.MarkupLine($"[yellow]Prompt:[/] {settings.Prompt}");
 
-        // Later call your AI service here
         AnsiConsole.MarkupLine("[blue]Response:[/] Hello from AI");
         return 0;
     }

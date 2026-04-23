@@ -1,4 +1,5 @@
-﻿using AiBiet.CLI.Commands;
+using AiBiet.CLI.Commands;
+using AiBiet.CLI.Commands.Utils;
 using AiBiet.CLI.Infrastructure;
 using AiBiet.CLI.UI;
 
@@ -15,20 +16,26 @@ app.Configure(config =>
     config.SetApplicationName("aibiet");
 
     config.AddCommand<AskCommand>("ask")
-       .WithDescription("Ask a model a single question");
+       .WithDescription("(Mocked) Ask a model a single question");
 
     config.AddCommand<ChatCommand>("chat")
-        .WithDescription("Start interactive chat mode");
+        .WithDescription("(Mocked) Start interactive chat mode");
 
     config.AddCommand<ModelsCommand>("models")
-        .WithDescription("List available models");
+        .WithDescription("(Mocked) List available models");
+
+    config.AddBranch("utils", utils =>
+    {
+        utils.SetDescription("Everyday developer utilities");
+
+        utils.AddCommand<GuidCommand>("guid")
+            .WithDescription("Generate one or more GUIDs/UUIDs");
+    });
 });
 
-
-// Show splash only when no command is passed
 if (args.Length == 0)
 {
     SplashScreen.Show();
-    return 0;
+    args = ["-h"];
 }
 return await app.RunAsync(args).ConfigureAwait(false);

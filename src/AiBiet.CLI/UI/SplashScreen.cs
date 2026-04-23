@@ -18,14 +18,6 @@ internal static class SplashScreen
         AnsiConsole.MarkupLine("[grey]Universal AI runtime for every model[/]");
         AnsiConsole.WriteLine();
 
-        AnsiConsole.MarkupLine("[yellow]Available commands:[/]");
-        AnsiConsole.MarkupLine("  [green]ask[/]     Ask a model");
-        AnsiConsole.MarkupLine("  [green]chat[/]    Start interactive chat mode");
-        AnsiConsole.MarkupLine("  [green]models[/]  List available models");
-        AnsiConsole.WriteLine();
-
-        AnsiConsole.MarkupLine("[grey]Example:[/] aibiet ask -m ollama -p \"hello\"");
-        AnsiConsole.WriteLine();
     }
 
     private static string GetVersion()
