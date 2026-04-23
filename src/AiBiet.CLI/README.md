@@ -52,6 +52,21 @@ aibiet
 
 ---
 
+## Configuration
+
+Upon the first run, AiBiet automatically creates a configuration file in your user profile directory (`~/.aibiet/config.json` on Linux/macOS, or `%USERPROFILE%\.aibiet\config.json` on Windows).
+
+By default, it looks like this:
+```json
+{
+  "DefaultProvider": "ollama"
+}
+```
+
+You can edit this file to change the default AI provider used by commands. Currently, it supports the `DefaultProvider` property. Additional configuration options for API keys and models will be available in future releases.
+
+---
+
 ## Usage Guide
 
 ### AI Commands
@@ -72,6 +87,12 @@ aibiet chat
 Show all available models configured in your local runtime.
 ```bash
 aibiet models
+```
+
+**Show Configuration:**
+Display the current configuration settings and the location of the config file.
+```bash
+aibiet config
 ```
 
 ### Developer Utilities

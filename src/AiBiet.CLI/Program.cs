@@ -3,11 +3,16 @@ using AiBiet.CLI.Commands.Utils;
 using AiBiet.CLI.Infrastructure;
 using AiBiet.CLI.UI;
 
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 using Spectre.Console.Cli;
 
+var appConfig = await ConfigBootstrapper.InitializeAsync().ConfigureAwait(false);
+
 var services = new ServiceCollection();
+services.AddSingleton(appConfig);
+
 var registrar = new TypeRegistrar(services);
 
 var app = new CommandApp(registrar);
@@ -23,6 +28,9 @@ app.Configure(config =>
 
     config.AddCommand<ModelsCommand>("models")
         .WithDescription("(Mocked) List available models");
+
+    config.AddCommand<ConfigCommand>("config")
+        .WithDescription("Show current configurations");
 
     config.AddBranch("utils", utils =>
     {
