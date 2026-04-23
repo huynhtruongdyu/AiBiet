@@ -1,5 +1,5 @@
 # AiBiet Remote Uninstaller
-# Usage: iex (irm https://raw.githubusercontent.com/huynhtruongdyu/AiBiet/main/uninstall-remote.ps1)
+# Usage: iex (irm https://raw.githubusercontent.com/huynhtruongdyu/AiBiet/main/scripts/uninstall-remote.ps1)
 
 $ErrorActionPreference = "Stop"
 

@@ -1,6 +1,6 @@
 # AiBiet Remote Installer
 # This script clones the repository to a temporary folder and runs the installer.
-# Usage: iex (irm https://raw.githubusercontent.com/huynhtruongdyu/AiBiet/main/install-remote.ps1)
+# Usage: iex (irm https://raw.githubusercontent.com/huynhtruongdyu/AiBiet/main/scripts/install-remote.ps1)
 
 $ErrorActionPreference = "Stop"
 
@@ -43,15 +43,16 @@ try {
         }
     }
 
-    if (Test-Path (Join-Path $tempDir "install.ps1")) {
+    $localInstaller = Join-Path $tempDir "scripts\install.ps1"
+    if (Test-Path $localInstaller) {
         Push-Location $tempDir
         try {
-            .\install.ps1
+            & $localInstaller
         } finally {
             Pop-Location
         }
     } else {
-        Write-Error "Could not find install.ps1 in the downloaded repository."
+        Write-Error "Could not find install.ps1 in the downloaded repository (expected at $localInstaller)."
     }
 } catch {
     Write-Host "[ERROR] Installation failed: $($_.Exception.Message)" -ForegroundColor Red

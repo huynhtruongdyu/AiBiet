@@ -29,7 +29,7 @@ You can install AiBiet globally on your machine as a .NET tool.
 You can install or update AiBiet directly without cloning the repository by running this in PowerShell:
 
 ```powershell
-iex (irm https://raw.githubusercontent.com/huynhtruongdyu/AiBiet/main/install-remote.ps1)
+iex (irm https://raw.githubusercontent.com/huynhtruongdyu/AiBiet/main/scripts/install-remote.ps1)
 ```
 
 ---
@@ -37,7 +37,7 @@ iex (irm https://raw.githubusercontent.com/huynhtruongdyu/AiBiet/main/install-re
 If you have the repository cloned, run the installer from the **repository root**:
 
 ```powershell
-.\install.ps1
+.\scripts\install.ps1
 ```
 
 > [!TIP]
@@ -51,13 +51,13 @@ To remove the global tool and optionally delete configuration settings:
 
 **One-Liner (No Clone Required):**
 ```powershell
-iex (irm https://raw.githubusercontent.com/huynhtruongdyu/AiBiet/main/uninstall-remote.ps1)
+iex (irm https://raw.githubusercontent.com/huynhtruongdyu/AiBiet/main/scripts/uninstall-remote.ps1)
 ```
 
 **Local (If Cloned):**
 Run from the **repository root**:
 ```powershell
-.\uninstall.ps1
+.\scripts\uninstall.ps1
 ```
 
 ---

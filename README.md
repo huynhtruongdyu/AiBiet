@@ -41,14 +41,14 @@ The solution is divided into the following layers and projects:
 Run this command in PowerShell to download and install AiBiet automatically:
 
 ```powershell
-iex (irm https://raw.githubusercontent.com/huynhtruongdyu/AiBiet/main/install-remote.ps1)
+iex (irm https://raw.githubusercontent.com/huynhtruongdyu/AiBiet/main/scripts/install-remote.ps1)
 ```
 
 ### Local Install (If Cloned)
 If you already have the repository cloned, run:
 
 ```powershell
-.\install.ps1
+.\scripts\install.ps1
 ```
 
 > [!TIP]
@@ -59,12 +59,12 @@ To remove the tool and its configuration:
 
 **One-Liner (No Clone Required):**
 ```powershell
-iex (irm https://raw.githubusercontent.com/huynhtruongdyu/AiBiet/main/uninstall-remote.ps1)
+iex (irm https://raw.githubusercontent.com/huynhtruongdyu/AiBiet/main/scripts/uninstall-remote.ps1)
 ```
 
 **Local (If Cloned):**
 ```powershell
-.\uninstall.ps1
+.\scripts\uninstall.ps1
 ```
 
 ### Manual Run (Development)
