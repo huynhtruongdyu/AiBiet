@@ -50,17 +50,26 @@ if ($Version) {
         exit 1
     }
 } else {
-    $releaseUrl = "https://api.github.com/repos/$Repo/releases/latest"
-}
-
-if (-not $release) {
+    # Fetch latest non-prerelease release
+    $releasesUrl = "https://api.github.com/repos/$Repo/releases?per_page=100"
     try {
-        $release = Invoke-RestMethod -Uri $releaseUrl -Headers @{ "User-Agent" = "AiBiet-Installer" }
+        $releases = Invoke-RestMethod -Uri $releasesUrl -Headers @{ "User-Agent" = "AiBiet-Installer" }
+        $release = $releases | Where-Object { $_.prerelease -eq $false } | Select-Object -First 1
+        if (-not $release) {
+            Write-Host "[ERROR] No stable release found. Use -PreRelease flag to install pre-releases." -ForegroundColor Red
+            Write-Host "Visit https://github.com/$Repo/releases to view available releases."
+            exit 1
+        }
     } catch {
-        Write-Host "[ERROR] Could not fetch release info from GitHub." -ForegroundColor Red
+        Write-Host "[ERROR] Could not fetch releases from GitHub." -ForegroundColor Red
         Write-Host "Check your internet connection or visit: https://github.com/$Repo/releases"
         exit 1
     }
+}
+
+if (-not $release) {
+    Write-Host "[ERROR] Could not determine release." -ForegroundColor Red
+    exit 1
 }
 
 $version = $release.tag_name
