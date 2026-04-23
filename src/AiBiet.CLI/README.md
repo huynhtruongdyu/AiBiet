@@ -89,10 +89,23 @@ Show all available models configured in your local runtime.
 aibiet models
 ```
 
-**Show Configuration:**
-Display the current configuration settings and the location of the config file.
+**Manage Configuration:**
+Show current config, start interactive setup, or clear settings.
 ```bash
+# Show current config
 aibiet config
+
+# Interactive setup for a specific provider
+aibiet config openai
+
+# Set values via flags
+aibiet config ollama --url http://localhost:11434 --default
+
+# Clear a specific provider
+aibiet config openai --clear
+
+# Clear all configurations (with confirmation)
+aibiet config --clear
 ```
 
 ### Developer Utilities
@@ -122,8 +135,14 @@ If you're contributing to AiBiet or testing changes locally without installing t
 dotnet run --project src/AiBiet.CLI -- utils guid -b
 ```
 
-**Using the Makefile (if available):**
+**Using the Makefile:**
+A Makefile is provided in the CLI directory to simplify common tasks.
 ```bash
-make pack     # Packages the tool
-make update   # Updates the global installation
+make pack       # Build and package the tool as a NuGet package
+make install    # Install the tool globally on your machine
+make update     # Update the existing global installation
+make uninstall  # Uninstall the global tool
+make reinstall  # Perform a fresh reinstall (uninstall then install)
+make run ARGS="ask -p 'hello'"  # Run the project directly with arguments
+make clean      # Clean the build artifacts
 ```

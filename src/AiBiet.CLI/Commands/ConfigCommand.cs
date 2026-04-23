@@ -26,6 +26,10 @@ internal class ConfigSettings : CommandSettings
     [CommandOption("--default")]
     [Description("Set this provider as the default")]
     public bool SetAsDefault { get; set; }
+
+    [CommandOption("--clear")]
+    [Description("Clear the configuration for the specified provider, or the entire config if no provider is specified")]
+    public bool Clear { get; set; }
 }
 
 internal class ConfigCommand : AsyncCommand<ConfigSettings>
@@ -39,6 +43,18 @@ internal class ConfigCommand : AsyncCommand<ConfigSettings>
 
     protected override async Task<int> ExecuteAsync(CommandContext context, ConfigSettings settings, CancellationToken cancellationToken)
     {
+        if (settings.Clear && string.IsNullOrEmpty(settings.Provider))
+        {
+            if (await AnsiConsole.ConfirmAsync("Are you sure you want to [red]clear all[/] configurations?", false, cancellationToken).ConfigureAwait(false))
+            {
+                _config.Providers.Clear();
+                _config.DefaultProvider = "ollama";
+                await ConfigBootstrapper.SaveAsync(_config).ConfigureAwait(false);
+                AnsiConsole.MarkupLine("[green]All configurations cleared![/]");
+            }
+            return 0;
+        }
+
         if (string.IsNullOrEmpty(settings.Provider))
         {
             ShowConfig();
@@ -46,7 +62,25 @@ internal class ConfigCommand : AsyncCommand<ConfigSettings>
         }
 
         var provider = settings.Provider.ToUpperInvariant();
-        
+
+        if (settings.Clear)
+        {
+            if (_config.Providers.Remove(provider))
+            {
+                if (string.Equals(provider, _config.DefaultProvider, StringComparison.OrdinalIgnoreCase))
+                {
+                    _config.DefaultProvider = "ollama";
+                }
+                await ConfigBootstrapper.SaveAsync(_config).ConfigureAwait(false);
+                AnsiConsole.MarkupLine($"[green]Configuration for provider '{provider}' cleared![/]");
+            }
+            else
+            {
+                AnsiConsole.MarkupLine($"[yellow]Provider '{provider}' not found in configuration.[/]");
+            }
+            return 0;
+        }
+
         if (!_config.Providers.TryGetValue(provider, out var pConfig))
         {
             pConfig = new ProviderConfig();
