@@ -23,7 +23,13 @@ if (Test-Path $configDir) {
     $confirmation = Read-Host "Do you want to delete the configuration folder and all settings? ($configDir) [y/N]"
     if ($confirmation -eq 'y' -or $confirmation -eq 'Y') {
         Write-Host "[2/2] Removing configuration directory..." -ForegroundColor Green
-        Remove-Item $configDir -Recurse -Force
+        try {
+            Remove-Item $configDir -Recurse -Force
+        } catch {
+            Write-Host "[ERROR] Could not remove configuration directory." -ForegroundColor Red
+            Write-Host "Please ensure no other applications (like VS Code or another Terminal) are using the files in: $configDir" -ForegroundColor Yellow
+            Write-Host "Error Details: $($_.Exception.Message)" -ForegroundColor Gray
+        }
     } else {
         Write-Host "[2/2] Keeping configuration directory." -ForegroundColor Gray
     }
