@@ -35,12 +35,27 @@ The solution is divided into the following layers and projects:
 * **`models`**: List and manage available models from the configured providers.
 * **`utils`**: A suite of handy developer tools (e.g., GUID/UUID generation).
 
-## Getting Started
+## Installation
 
-To run the application locally, you can use the .NET CLI:
+### One-Liner Install (No Clone Required)
+Run this command in PowerShell to download and install AiBiet automatically:
+
+```powershell
+iex (irm https://raw.githubusercontent.com/huynhtruongdyu/AiBiet/main/install-remote.ps1)
+```
+
+### Local Install (If Cloned)
+If you already have the repository cloned, run:
+
+```powershell
+.\install.ps1
+```
+
+### Manual Run (Development)
+To run the application directly without installing:
 
 ```bash
 dotnet run --project src/AiBiet.CLI/AiBiet.CLI.csproj
 ```
 
-The first time you run it, a configuration file will be created in your user profile directory (`~/.aibiet/config.json`) defaulting to the `ollama` provider.
+For more detailed instructions, see the [CLI Documentation](src/AiBiet.CLI/README.md).

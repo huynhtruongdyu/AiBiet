@@ -24,14 +24,40 @@ Before installing AiBiet, ensure you have the following installed:
 
 You can install AiBiet globally on your machine as a .NET tool.
 
-### 1. Build and Pack
+### Quick Install (One-Liner)
+
+You can install or update AiBiet directly without cloning the repository by running this in PowerShell:
+
+```powershell
+iex (irm https://raw.githubusercontent.com/huynhtruongdyu/AiBiet/main/install-remote.ps1)
+```
+
+---
+
+### Local Install (If Cloned)
+
+If you have the repository cloned, run:
+
+```powershell
+.\install.ps1
+```
+
+> [!TIP]
+> If you get an error about scripts being disabled, run: `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process` then try again.
+
+---
+
+### Manual Installation
+If you prefer to do it manually, follow these steps:
+
+#### 1. Build and Pack
 First, compile and package the CLI tool into a NuGet package:
 
 ```bash
 dotnet pack src/AiBiet.CLI/AiBiet.CLI.csproj -c Release
 ```
 
-### 2. Install the Tool
+#### 2. Install the Tool
 Once packed, you can install it globally on your machine by pointing to the output directory:
 
 ```bash
