@@ -60,10 +60,10 @@ jobs:
             -r ${{ matrix.rid }} \
             --self-contained true \
             -o ./publish/${{ matrix.rid }} \
-            /p:Version=${{ steps.version.outputs.VERSION }} \
-            /p:PublishSingleFile=true \
-            /p:DebugType=None \
-            /p:DebugSymbols=false
+            -p:Version=${{ steps.version.outputs.VERSION }} \
+            -p:PublishSingleFile=true \
+            -p:DebugType=None \
+            -p:DebugSymbols=false
 
       # Rename the output binary to a clean name 'aibiet' or 'aibiet.exe'
       - name: Rename binary (Windows)
