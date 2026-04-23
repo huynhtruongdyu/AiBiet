@@ -68,6 +68,9 @@ artifacts/
 # Tye
 .tye/
 
+# Build distributions
+dist/
+
 # ASP.NET Scaffolding
 ScaffoldingReadMe.txt
 

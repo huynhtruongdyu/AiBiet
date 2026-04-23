@@ -33,6 +33,9 @@ app.Configure(config =>
     config.AddCommand<ConfigCommand>("config")
         .WithDescription("Show current configurations");
 
+    config.AddCommand<DoctorCommand>("doctor")
+        .WithDescription("Check system health and connectivity");
+
     config.AddBranch("utils", utils =>
     {
         utils.SetDescription("Everyday developer utilities");

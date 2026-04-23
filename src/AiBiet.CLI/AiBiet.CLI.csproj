@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -10,6 +10,13 @@
     <ToolCommandName>aibiet</ToolCommandName>
     <PackageId>AiBiet.CLI</PackageId>
     <Version>0.1.0</Version>
+
+    <!-- Native AOT Properties -->
+    <PublishAot>true</PublishAot>
+    <IsAotCompatible>true</IsAotCompatible>
+    <OptimizationPreference>Size</OptimizationPreference>
+    <StackTraceSupport>false</StackTraceSupport>
+    <InvariantGlobalization>false</InvariantGlobalization> <!-- Keep false if you need multi-language/culture support -->
   </PropertyGroup>
 
   <ItemGroup>
