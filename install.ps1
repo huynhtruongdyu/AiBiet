@@ -18,6 +18,10 @@ if (!(Get-Command dotnet -ErrorAction SilentlyContinue)) {
 $distPath = Join-Path $PSScriptRoot "dist"
 Write-Host "[1/3] Building and packaging AiBiet.CLI..." -ForegroundColor Green
 dotnet pack src/AiBiet.CLI/AiBiet.CLI.csproj -c Release -o $distPath --nologo -v q
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "[ERROR] Failed to package AiBiet.CLI." -ForegroundColor Red
+    exit $LASTEXITCODE
+}
 
 # 3. Install or Update
 $isInstalled = dotnet tool list -g | Select-String "aibiet.cli"
@@ -28,6 +32,11 @@ if ($isInstalled) {
 } else {
     Write-Host "[2/3] Installing AiBiet CLI..." -ForegroundColor Green
     dotnet tool install --global AiBiet.CLI --add-source $distPath
+}
+
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "[ERROR] Failed to install/update AiBiet CLI." -ForegroundColor Red
+    exit $LASTEXITCODE
 }
 
 # 4. Cleanup
