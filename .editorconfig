@@ -81,6 +81,7 @@ dotnet_remove_unnecessary_suppression_exclusions = none
 dotnet_diagnostic.CA1303.severity = silent
 dotnet_diagnostic.CA1812.severity = silent
 dotnet_diagnostic.CA1852.severity = suggestion
+dotnet_diagnostic.S1075.severity = suggestion
 dotnet_diagnostic.S3881.severity = silent
 
 # var preferences
