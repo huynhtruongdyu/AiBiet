@@ -14,6 +14,16 @@ if (!(Get-Command dotnet -ErrorAction SilentlyContinue)) {
     exit 1
 }
 
+$dotnetVersion = dotnet --version
+if ($dotnetVersion -match '^(\d+)') {
+    $major = [int]$matches[1]
+    if ($major -lt 10) {
+        Write-Host "[ERROR] .NET SDK 10 or later is required. You have version $dotnetVersion." -ForegroundColor Red
+        Write-Host "Please update from: https://dotnet.microsoft.com/download"
+        exit 1
+    }
+}
+
 # 2. Pack the project
 $distPath = Join-Path $PSScriptRoot "dist"
 Write-Host "[1/3] Building and packaging AiBiet.CLI..." -ForegroundColor Green

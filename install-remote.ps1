@@ -8,6 +8,23 @@ $tempDir = Join-Path $env:TEMP "AiBiet_Install_$(Get-Random)"
 if (Test-Path $tempDir) { Remove-Item $tempDir -Recurse -Force }
 New-Item -ItemType Directory -Path $tempDir | Out-Null
 
+# Check for .NET SDK early
+if (!(Get-Command dotnet -ErrorAction SilentlyContinue)) {
+    Write-Host "[ERROR] .NET SDK not found." -ForegroundColor Red
+    Write-Host "Please install .NET 10 or later from: https://dotnet.microsoft.com/download"
+    exit 1
+}
+
+$dotnetVersion = dotnet --version
+if ($dotnetVersion -match '^(\d+)') {
+    $major = [int]$matches[1]
+    if ($major -lt 10) {
+        Write-Host "[ERROR] .NET SDK 10 or later is required. You have version $dotnetVersion." -ForegroundColor Red
+        Write-Host "Please update from: https://dotnet.microsoft.com/download"
+        exit 1
+    }
+}
+
 Write-Host "--- AiBiet Online Installer ---" -ForegroundColor Cyan
 
 try {
