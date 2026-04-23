@@ -8,7 +8,7 @@
 # Support both direct execution and iex (irm ...) pattern
 param(
     [string]$Version = $env:AIBIET_INSTALL_VERSION,
-    [switch]$PreRelease = [bool]$env:AIBIET_INSTALL_PRERELEASE
+    [switch]$PreRelease = ($env:AIBIET_INSTALL_PRERELEASE -eq "1" -or $env:AIBIET_INSTALL_PRERELEASE -eq "true")
 )
 
 # If called via iex (irm ...), parameters might not work, so check env vars
@@ -39,7 +39,16 @@ if ($Version) {
     $releasesUrl = "https://api.github.com/repos/$Repo/releases?per_page=100"
     try {
         $releases = Invoke-RestMethod -Uri $releasesUrl -Headers @{ "User-Agent" = "AiBiet-Installer" }
-        $release = $releases | Where-Object { $_.prerelease -eq $true } | Select-Object -First 1
+
+        # Find first prerelease
+        $release = $null
+        foreach ($r in $releases) {
+            if ($r.prerelease) {
+                $release = $r
+                break
+            }
+        }
+
         if (-not $release) {
             Write-Host "[ERROR] No pre-release found." -ForegroundColor Red
             exit 1
@@ -54,10 +63,20 @@ if ($Version) {
     $releasesUrl = "https://api.github.com/repos/$Repo/releases?per_page=100"
     try {
         $releases = Invoke-RestMethod -Uri $releasesUrl -Headers @{ "User-Agent" = "AiBiet-Installer" }
-        $release = $releases | Where-Object { $_.prerelease -eq $false } | Select-Object -First 1
+
+        # Find first stable (non-prerelease) release
+        $release = $null
+        foreach ($r in $releases) {
+            if (-not $r.prerelease) {
+                $release = $r
+                break
+            }
+        }
+
         if (-not $release) {
-            Write-Host "[ERROR] No stable release found. Use -PreRelease flag to install pre-releases." -ForegroundColor Red
+            Write-Host "[ERROR] No stable release found." -ForegroundColor Red
             Write-Host "Visit https://github.com/$Repo/releases to view available releases."
+            Write-Host "Tip: Use '-PreRelease' flag to install pre-release versions." -ForegroundColor Yellow
             exit 1
         }
     } catch {
