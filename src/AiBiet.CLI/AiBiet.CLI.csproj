@@ -11,12 +11,9 @@
     <PackageId>AiBiet.CLI</PackageId>
     <Version>0.1.0</Version>
 
-    <!-- Native AOT Properties -->
-    <PublishAot>true</PublishAot>
-    <IsAotCompatible>true</IsAotCompatible>
-    <OptimizationPreference>Size</OptimizationPreference>
-    <StackTraceSupport>false</StackTraceSupport>
-    <InvariantGlobalization>false</InvariantGlobalization> <!-- Keep false if you need multi-language/culture support -->
+    <!-- Self-contained single-file publish (no AOT — Spectre.Console.Cli is not AOT-compatible) -->
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
   </PropertyGroup>
 
   <ItemGroup>

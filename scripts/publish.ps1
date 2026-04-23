@@ -29,13 +29,12 @@ if (Test-Path $distPath) {
 }
 
 # 3. Publish
-Write-Host "Building standalone native binary..." -ForegroundColor Green
+Write-Host "Building standalone self-contained binary..." -ForegroundColor Green
 dotnet publish $projectPath `
     -c $Configuration `
     -r $Runtime `
     --self-contained true `
     -o $distPath `
-    /p:PublishAot=true `
     /p:PublishSingleFile=true `
     /p:DebugType=None `
     /p:DebugSymbols=false
