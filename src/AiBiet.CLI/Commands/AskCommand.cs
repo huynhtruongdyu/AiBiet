@@ -5,15 +5,9 @@ using Spectre.Console;
 using Spectre.Console.Cli;
 
 using AiBiet.CLI.Infrastructure;
+using AiBiet.Core.Domain.Models;
 
 namespace AiBiet.CLI.Commands;
-
-internal enum OutputFormat
-{
-    PlainText,
-    Json,
-    File
-}
 
 internal class AskCommandSettings : CommandSettings
 {
@@ -30,7 +24,7 @@ internal class AskCommandSettings : CommandSettings
     public string? Provider { get; set; }
 
     [CommandOption("-f|--format")]
-    [Description("Output format: plain, json, file")]
+    [Description("Output format: plain, markdown, json, file")]
     public string? Format { get; set; }
 
     [CommandOption("--output|-o")]
@@ -66,18 +60,31 @@ internal class AskCommand : AsyncCommand<AskCommandSettings>
         try
         {
             string responseText = string.Empty;
+            var format = ParseOutputFormat(settings.Format);
 
             await AnsiConsole.Status()
                 .Spinner(Spinner.Known.Dots)
                 .SpinnerStyle(Style.Parse("cyan"))
                 .StartAsync("Thinking...", async _ =>
                 {
-                    var response = await provider.AskAsync(model, settings.Prompt, cancellationToken).ConfigureAwait(false);
-                    responseText = response.Content;
+                    if (format == OutputFormat.PlainText)
+                    {
+                        var messages = new[]
+                        {
+                            ChatMessage.System("Avoid using Markdown formatting like headers, bold, italics, or code blocks. Provide your response in plain text only."),
+                            ChatMessage.User(settings.Prompt)
+                        };
+                        var response = await provider.ChatAsync(model, messages, cancellationToken).ConfigureAwait(false);
+                        responseText = response.Content;
+                    }
+                    else
+                    {
+                        var response = await provider.AskAsync(model, settings.Prompt, cancellationToken).ConfigureAwait(false);
+                        responseText = response.Content;
+                    }
                 }).ConfigureAwait(false);
 
             // Handle output format
-            var format = ParseOutputFormat(settings.Format);
             await OutputResponse(responseText, format, settings.OutputPath, cancellationToken).ConfigureAwait(false);
         }
         catch (InvalidOperationException ex)
@@ -145,4 +152,4 @@ internal class AskCommand : AsyncCommand<AskCommandSettings>
             AnsiConsole.WriteLine(content);
         }
     }
-}
+}

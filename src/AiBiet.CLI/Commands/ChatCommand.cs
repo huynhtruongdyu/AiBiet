@@ -54,10 +54,19 @@ internal class ChatCommand : AsyncCommand<ChatCommandSettings>
         var history = new List<ChatMessage>();
         var allResponses = new List<string>();
 
-        if (!string.IsNullOrWhiteSpace(settings.SystemPrompt))
+        var systemPrompt = settings.SystemPrompt;
+        if (string.IsNullOrWhiteSpace(systemPrompt) && format == OutputFormat.PlainText)
         {
-            history.Add(ChatMessage.System(settings.SystemPrompt));
-            AnsiConsole.MarkupLine($"[dim italic]System: {settings.SystemPrompt}[/]\n");
+            systemPrompt = "Avoid using Markdown formatting like headers, bold, italics, or code blocks. Provide your response in plain text only.";
+        }
+
+        if (!string.IsNullOrWhiteSpace(systemPrompt))
+        {
+            history.Add(ChatMessage.System(systemPrompt));
+            if (!string.IsNullOrWhiteSpace(settings.SystemPrompt))
+            {
+                AnsiConsole.MarkupLine($"[dim italic]System: {settings.SystemPrompt}[/]\n");
+            }
         }
 
         while (!cancellationToken.IsCancellationRequested)
