@@ -30,4 +30,8 @@
     <ProjectReference Include="..\AiBiet.Providers.Gemini\AiBiet.Providers.Gemini.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Bootstrap\" />
+  </ItemGroup>
+
 </Project>
