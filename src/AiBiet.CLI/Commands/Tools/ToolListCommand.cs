@@ -1,8 +1,7 @@
 using System.ComponentModel;
-using System.IO.Compression;
-using System.Reflection;
 
 using AiBiet.CLI.Infrastructure;
+using AiBiet.Core.Interfaces;
 
 using Spectre.Console;
 using Spectre.Console.Cli;
@@ -12,137 +11,68 @@ namespace AiBiet.CLI.Commands.Tools;
 internal class ToolListSettings : CommandSettings
 {
     [CommandOption("-o|--online")]
-    [Description("Scan tools from configured sources")]
+    [Description("Scan all configured sources for available tools")]
     public bool Online { get; set; }
 }
 
 internal class ToolListCommand : AsyncCommand<ToolListSettings>
 {
     private readonly AiBietConfig _config;
+    private readonly IToolScanner _toolScanner;
 
-    public ToolListCommand(AiBietConfig config)
+    public ToolListCommand(AiBietConfig config, IToolScanner toolScanner)
     {
         _config = config;
+        _toolScanner = toolScanner;
     }
 
     protected override async Task<int> ExecuteAsync(CommandContext context, ToolListSettings settings, CancellationToken cancellationToken)
     {
-        if (!settings.Online)
-        {
-            AnsiConsole.MarkupLine("[yellow]Use --online to scan tools from configured sources.[/]");
-            return 0;
-        }
+        var installedTools = (await _toolScanner.ScanAsync([_config.ToolsPath], cancellationToken).ConfigureAwait(false))
+            .Select(t => t.Name)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-        var sources = _config.ToolSources;
+        var sources = settings.Online
+            ? _config.ToolSources
+            : [_config.ToolsPath];
+
         if (sources.Count == 0)
         {
             AnsiConsole.MarkupLine("[yellow]No tool sources configured.[/]");
-            AnsiConsole.MarkupLine("Add sources using: [green]aibiet tools source add <path>[/]");
             return 0;
         }
 
-        var tools = new List<ToolInfo>();
-
-        foreach (var source in sources)
-        {
-            if (!Directory.Exists(source))
-            {
-                AnsiConsole.MarkupLine($"[yellow]Source not found: {source}[/]");
-                continue;
-            }
-
-            var toolPackageFiles = Directory.GetFiles(source, "*.nupkg", SearchOption.AllDirectories);
-
-            foreach (var packageFile in toolPackageFiles)
-            {
-#pragma warning disable CA1849
-#pragma warning disable S6966
-                try
-                {
-                    using var archive = ZipFile.OpenRead(packageFile);
-                    var tempDir = Path.Combine(Path.GetTempPath(), $"aibiet_{Guid.NewGuid():N}");
-                    Directory.CreateDirectory(tempDir);
-
-                    try
-                    {
-                        archive.ExtractToDirectory(tempDir);
-
-                        var dllFiles = Directory.GetFiles(tempDir, "*.dll", SearchOption.AllDirectories);
-
-                        foreach (var dllFile in dllFiles)
-                        {
-                            try
-                            {
-                                var assembly = Assembly.LoadFrom(dllFile);
-                                var toolTypes = assembly.GetTypes()
-                                    .Where(t => t.IsClass && !t.IsAbstract && t.GetInterface("AiBiet.Core.Interfaces.ITool`1") != null);
-
-                                foreach (var toolType in toolTypes)
-                                {
-                                    var toolInterface = toolType.GetInterface("AiBiet.Core.Interfaces.ITool`1");
-                                    if (toolInterface != null)
-                                    {
-                                        var nameProp = toolInterface.GetProperty("Name");
-                                        var descProp = toolInterface.GetProperty("Description");
-
-                                        var toolInstance = Activator.CreateInstance(toolType);
-                                        var name = nameProp?.GetValue(toolInstance) as string ?? toolType.Name;
-                                        var description = descProp?.GetValue(toolInstance) as string;
-
-                                        tools.Add(new ToolInfo
-                                        {
-                                            Name = name,
-                                            Description = description,
-                                            Source = Path.GetFileName(packageFile)
-                                        });
-                                    }
-                                }
-                            }
-                            catch (Exception)
-                            {
-                                // Skip assemblies that cannot be loaded
-                            }
-                        }
-                    }
-                    finally
-                    {
-                        Directory.Delete(tempDir, true);
-                    }
-                }
-                catch (Exception)
-                {
-                    // Skip packages that cannot be extracted
-                }
-#pragma warning restore CA1849
-#pragma warning restore S6966
-            }
-        }
+        var tools = (await _toolScanner.ScanAsync(sources, cancellationToken).ConfigureAwait(false)).ToList();
 
         if (tools.Count == 0)
         {
-            AnsiConsole.MarkupLine("[yellow]No tools found.[/]");
+            if (settings.Online)
+            {
+                AnsiConsole.MarkupLine("[yellow]No tools found in configured sources.[/]");
+            }
+            else
+            {
+                AnsiConsole.MarkupLine("[yellow]No tools installed. Use [blue]--online[/] to search for available tools.[/]");
+            }
             return 0;
         }
 
         var table = new Table();
+        table.Title(settings.Online ? "[blue]Available Tools[/]" : "[green]Installed Tools[/]");
         table.AddColumn("Name");
         table.AddColumn("Description");
         table.AddColumn("Source");
+        table.AddColumn("Status");
 
         foreach (var tool in tools)
         {
-            table.AddRow(tool.Name, tool.Description ?? "", tool.Source);
+            var isInstalled = installedTools.Contains(tool.Name);
+            var status = isInstalled ? "[green]Installed[/]" : "[blue]Available[/]";
+            table.AddRow(tool.Name, tool.Description ?? "", tool.Source, status);
         }
 
         AnsiConsole.Write(table);
 
-        return await Task.FromResult(0).ConfigureAwait(false);
+        return 0;
     }
-}
-
-internal class ToolInfo
-{
-    public string Name { get; set; } = "";
-    public string? Description { get; set; }
-    public string Source { get; set; } = "";
 }

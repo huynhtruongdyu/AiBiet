@@ -54,14 +54,14 @@ internal static class CommandRegistration
             // tools.AddCommand<ToolInstallCommand>("install")
             //     .WithDescription("Install a tool");
 
-            // tools.AddCommand<ToolAddCommand>("add")
-            //     .WithDescription("Install a tool");
+            tools.AddCommand<ToolAddCommand>("add")
+                .WithDescription("Add/Install a tool");
 
-            // tools.AddCommand<ToolUpdateCommand>("update")
-            //     .WithDescription("Install a tool");
+            tools.AddCommand<ToolUpdateCommand>("update")
+                .WithDescription("Update an installed tool");
 
-            // tools.AddCommand<ToolRemoveCommand>("remove")
-            //     .WithDescription("Install a tool");
+            tools.AddCommand<ToolRemoveCommand>("remove")
+                .WithDescription("Remove an installed tool");
 
             tools.AddCommand<ToolListCommand>("list")
                 .WithDescription("List tools (installed or available)");

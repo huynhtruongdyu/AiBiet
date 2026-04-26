@@ -106,7 +106,7 @@ internal static class ConfigBootstrapper
                   "DefaultModel": ""
                 }
               },
-              "ToolSources": ["D:\Projects\github\huynhtruongdyu\AiBiet\packages"]
+              "ToolSources": ["D:\\Projects\\github\\huynhtruongdyu\\AiBiet\\packages"]
             }
             """;
             await File.WriteAllTextAsync(configPath, defaultConfig).ConfigureAwait(false);
@@ -116,6 +116,25 @@ internal static class ConfigBootstrapper
             .AddJsonFile(configPath, optional: true, reloadOnChange: true)
             .Build();
 
-        return configuration.Get<AiBietConfig>() ?? new AiBietConfig();
+        var config = configuration.Get<AiBietConfig>() ?? new AiBietConfig();
+
+        // Ensure ToolsPath is set and exists
+        if (string.IsNullOrWhiteSpace(config.ToolsPath))
+        {
+            config.ToolsPath = Path.Combine(configDir, "tools");
+        }
+
+        if (!Directory.Exists(config.ToolsPath))
+        {
+            Directory.CreateDirectory(config.ToolsPath);
+        }
+
+        // Ensure ToolsPath is in ToolSources
+        if (!config.ToolSources.Contains(config.ToolsPath))
+        {
+            config.ToolSources.Add(config.ToolsPath);
+        }
+
+        return config;
     }
 }

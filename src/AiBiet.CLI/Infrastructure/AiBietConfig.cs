@@ -10,6 +10,8 @@ internal class AiBietConfig
     public string? DefaultProvider { get; set; }
     public Dictionary<string, ProviderConfig> Providers { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     public List<string> ToolSources { get; set; } = [];
+    [JsonIgnore]
+    public string ToolsPath { get; set; } = "";
 }
 
 internal class ProviderConfig

@@ -15,6 +15,7 @@ internal static class ServiceRegistration
         services.AddHttpClient();
 
         services.AddSingleton<AiProviderResolver>();
+        services.AddSingleton<IToolScanner, ToolScanner>();
 
         services.AddTransient<IAiProvider>(sp =>
         {

@@ -1,0 +1,74 @@
+using System.ComponentModel;
+
+using AiBiet.CLI.Infrastructure;
+using AiBiet.Core.Interfaces;
+
+using Spectre.Console;
+using Spectre.Console.Cli;
+
+namespace AiBiet.CLI.Commands.Tools;
+
+internal class ToolUpdateSettings : CommandSettings
+{
+    [CommandArgument(0, "<TOOL_NAME>")]
+    [Description("The name of the tool to update")]
+    public string ToolName { get; set; } = "";
+}
+
+internal class ToolUpdateCommand(AiBietConfig config, IToolScanner toolScanner) : AsyncCommand<ToolUpdateSettings>
+{
+    private readonly AiBietConfig _config = config;
+    private readonly IToolScanner _toolScanner = toolScanner;
+
+    protected override async Task<int> ExecuteAsync(CommandContext context, ToolUpdateSettings settings, CancellationToken cancellationToken)
+    {
+        var toolName = settings.ToolName;
+
+        await AnsiConsole.Status()
+            .StartAsync($"Updating tool '{toolName}'...", async ctx =>
+            {
+                // Check if installed
+                var installedTools = await _toolScanner.ScanAsync([_config.ToolsPath], cancellationToken).ConfigureAwait(false);
+                var installedTool = installedTools.FirstOrDefault(t => string.Equals(t.Name, toolName, StringComparison.OrdinalIgnoreCase));
+
+                if (installedTool == null)
+                {
+                    AnsiConsole.MarkupLine($"[yellow]Tool '{toolName}' is not installed. Use 'add' to install it.[/]");
+                    return;
+                }
+
+                // Search in other sources
+                var otherSources = _config.ToolSources.Where(s => !string.Equals(s, _config.ToolsPath, StringComparison.OrdinalIgnoreCase));
+                var tool = await _toolScanner.FindToolAsync(toolName, otherSources, cancellationToken).ConfigureAwait(false);
+
+                if (tool == null)
+                {
+                    AnsiConsole.MarkupLine($"[red]No update found for tool '{toolName}' in configured sources.[/]");
+                    return;
+                }
+
+                AnsiConsole.MarkupLine($"[blue]Updating tool '{toolName}' from {tool.Source}...[/]");
+
+                try
+                {
+                    var fileName = Path.GetFileName(tool.PackagePath);
+                    var destination = Path.Combine(_config.ToolsPath, fileName);
+
+                    // If the package name changed (different version in filename), delete the old one
+                    if (!string.Equals(installedTool.PackagePath, destination, StringComparison.OrdinalIgnoreCase) && File.Exists(installedTool.PackagePath))
+                    {
+                        File.Delete(installedTool.PackagePath);
+                    }
+
+                    File.Copy(tool.PackagePath, destination, true);
+                    AnsiConsole.MarkupLine($"[green]Successfully updated tool '{toolName}'.[/]");
+                }
+                catch (Exception ex)
+                {
+                    AnsiConsole.MarkupLine($"[red]Failed to update tool: {ex.Message}[/]");
+                }
+            }).ConfigureAwait(false);
+
+        return 0;
+    }
+}
