@@ -3,6 +3,7 @@
     <File Path=".editorconfig" />
     <File Path="Directory.Build.props" />
     <File Path="Directory.Packages.props" />
+    <File Path="NuGet.Config" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/AiBiet.CLI/AiBiet.CLI.csproj" />
@@ -13,5 +14,6 @@
     <Project Path="src/AiBiet.Providers.OpenAI/AiBiet.Providers.OpenAI.csproj" />
     <Project Path="src/AiBiet.SharedKernel/AiBiet.SharedKernel.csproj" />
     <Project Path="src/AiBiet.Tools.Coding/AiBiet.Tools.Coding.csproj" />
+    <Project Path="src/AiBiet.Tools.Translate/AiBiet.Tools.Translate.csproj" />
   </Folder>
 </Solution>

@@ -191,8 +191,6 @@ internal class ConfigCommand : AsyncCommand<ConfigSettings>
         {
             var table = new Table();
 
-
-
             table.AddColumn("Provider");
             table.AddColumn("ApiUrl");
             table.AddColumn("ApiKey");
@@ -217,6 +215,26 @@ internal class ConfigCommand : AsyncCommand<ConfigSettings>
         else
         {
             AnsiConsole.MarkupLine("[grey]No providers configured.[/]");
+        }
+
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("Tool Sources:");
+
+        if (_config.ToolSources != null && _config.ToolSources.Count > 0)
+        {
+            var table = new Table();
+            table.AddColumn("#");
+            table.AddColumn("Source");
+
+            for (int i = 0; i < _config.ToolSources.Count; i++)
+            {
+                table.AddRow((i + 1).ToString(System.Globalization.CultureInfo.InvariantCulture), _config.ToolSources[i]);
+            }
+            AnsiConsole.Write(table);
+        }
+        else
+        {
+            AnsiConsole.MarkupLine("[grey]No tool sources configured.[/]");
         }
     }
 }

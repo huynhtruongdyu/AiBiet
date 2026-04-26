@@ -15,7 +15,7 @@ Built with C# and `Spectre.Console`, it offers a rich and interactive terminal e
 | `aibiet models` | List available models from configured providers | 🚧 In Progress |
 | `aibiet config` | View and manage AI provider configuration interactively | ✅ Ready |
 | `aibiet doctor` | Health-check your system, providers, and connectivity | ✅ Ready |
-| `aibiet utils guid` | Generate one or more GUIDs/UUIDs with formatting options | ✅ Ready |
+| `aibiet util guid` | Generate one or more GUIDs/UUIDs with formatting options | ✅ Ready |
 
 ---
 

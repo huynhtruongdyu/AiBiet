@@ -69,6 +69,13 @@ internal static class ConfigBootstrapper
                   }
                 }
               }
+            },
+            "ToolSources": {
+              "type": "array",
+              "description": "Paths or URLs to load tools from",
+              "items": {
+                "type": "string"
+              }
             }
           },
           "additionalProperties": false
@@ -85,20 +92,21 @@ internal static class ConfigBootstrapper
               "$schema": "./config.schema.json",
               "Providers": {
                 "ollama": {
-                  "ApiUrl": "http://localhost:11434",
-                  "DefaultModel": "llama3.2"
+                  "ApiUrl": "",
+                  "DefaultModel": ""
                 },
                 "openai": {
-                  "ApiUrl": "https://api.openai.com/v1",
+                  "ApiUrl": "",
                   "ApiKey": "",
-                  "DefaultModel": "gpt-4o"
+                  "DefaultModel": ""
                 },
                 "gemini": {
-                  "ApiUrl": "https://generativelanguage.googleapis.com/v1beta",
+                  "ApiUrl": "",
                   "ApiKey": "",
-                  "DefaultModel": "gemini-2.0-flash"
+                  "DefaultModel": ""
                 }
-              }
+              },
+              "ToolSources": ["D:\Projects\github\huynhtruongdyu\AiBiet\packages"]
             }
             """;
             await File.WriteAllTextAsync(configPath, defaultConfig).ConfigureAwait(false);

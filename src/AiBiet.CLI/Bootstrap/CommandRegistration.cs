@@ -1,4 +1,5 @@
 using AiBiet.CLI.Commands;
+using AiBiet.CLI.Commands.Tools;
 using AiBiet.CLI.Commands.Utils;
 
 using Spectre.Console.Cli;
@@ -30,6 +31,41 @@ internal static class CommandRegistration
 
             utils.AddCommand<GuidCommand>("guid")
                 .WithDescription("Generate GUIDs");
+        });
+
+        config.AddBranch("tool", tools =>
+        {
+            tools.SetDescription("Manage tools");
+
+            tools.AddBranch("source", source =>
+            {
+                source.SetDescription("Manage tool sources");
+
+                // source.AddCommand<ToolSourceAddCommand>("add")
+                //     .WithDescription("Add tool sources");
+
+                // source.AddCommand<ToolSourceRemoveCommand>("remove")
+                //     .WithDescription("Remove tool sources");
+
+                source.AddCommand<ToolSourceListCommand>("list")
+                    .WithDescription("List tool sources");
+            });
+
+            // tools.AddCommand<ToolInstallCommand>("install")
+            //     .WithDescription("Install a tool");
+
+            // tools.AddCommand<ToolAddCommand>("add")
+            //     .WithDescription("Install a tool");
+
+            // tools.AddCommand<ToolUpdateCommand>("update")
+            //     .WithDescription("Install a tool");
+
+            // tools.AddCommand<ToolRemoveCommand>("remove")
+            //     .WithDescription("Install a tool");
+
+            tools.AddCommand<ToolListCommand>("list")
+                .WithDescription("List tools (installed or available)");
+
         });
     }
 }

@@ -23,4 +23,3 @@ run:
 
 clean:
 	dotnet clean .
-# 	rm -f ./bin/Release/*.nupkg

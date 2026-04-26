@@ -10,6 +10,7 @@
     <ToolCommandName>aibiet</ToolCommandName>
     <PackageId>AiBiet.CLI</PackageId>
     <Version>0.2.0</Version>
+    <PackageOutputPath>$(MSBuildProjectDirectory)/../../packages</PackageOutputPath>
 
     <!-- Self-contained single-file publish (no AOT — Spectre.Console.Cli is not AOT-compatible) -->
     <PublishSingleFile>true</PublishSingleFile>

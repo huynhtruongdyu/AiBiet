@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AiBiet.Core\AiBiet.Core.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <PackageId>AiBiet.Tools.Translate</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>Duy Huynh</Authors>
+    <Description>Translate tools for AiBiet CLI</Description>
+    <PackageOutputPath>$(MSBuildProjectDirectory)/../../packages</PackageOutputPath>
+    <RepositoryUrl>https://github.com/huynhtruongdyu/AiBiet</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/huynhtruongdyu/AiBiet</PackageProjectUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+  </PropertyGroup>
+
+</Project>
