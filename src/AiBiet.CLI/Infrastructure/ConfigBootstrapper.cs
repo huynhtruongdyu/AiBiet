@@ -106,7 +106,7 @@ internal static class ConfigBootstrapper
                   "DefaultModel": ""
                 }
               },
-              "ToolSources": ["D:\\Projects\\github\\huynhtruongdyu\\AiBiet\\packages"]
+              "ToolSources": []
             }
             """;
             await File.WriteAllTextAsync(configPath, defaultConfig).ConfigureAwait(false);

@@ -125,7 +125,7 @@ public class ToolManager(AiBietConfig config) : IToolManager
             {
                 try
                 {
-                    var assembly = Assembly.LoadFrom(dllFile);
+                    var assembly = Assembly.Load(File.ReadAllBytes(dllFile));
                     var toolTypes = assembly.GetTypes().Where(t => t is { IsClass: true, IsAbstract: false } && t.GetInterface("AiBiet.Core.Interfaces.ITool`1") != null);
 
                     foreach (var toolType in toolTypes)
@@ -149,7 +149,10 @@ public class ToolManager(AiBietConfig config) : IToolManager
         }
         finally
         {
-            if (Directory.Exists(tempDir)) Directory.Delete(tempDir, true);
+            if (Directory.Exists(tempDir))
+            {
+                try { Directory.Delete(tempDir, true); } catch { /* Ignore delete errors */ }
+            }
         }
 
         return tools;
@@ -170,7 +173,7 @@ public class ToolManager(AiBietConfig config) : IToolManager
             {
                 try
                 {
-                    var assembly = Assembly.LoadFrom(dllFile);
+                    var assembly = Assembly.Load(File.ReadAllBytes(dllFile));
                     var toolTypes = assembly.GetTypes().Where(t => t is { IsClass: true, IsAbstract: false } && t.GetInterface("AiBiet.Core.Interfaces.ITool`1") != null);
 
                     foreach (var toolType in toolTypes)
@@ -193,6 +196,13 @@ public class ToolManager(AiBietConfig config) : IToolManager
             }
         }
         catch { /* Skip failed packages */ }
+        finally
+        {
+            if (Directory.Exists(tempDir))
+            {
+                try { Directory.Delete(tempDir, true); } catch { /* Ignore delete errors */ }
+            }
+        }
 
         return registrations;
     }
