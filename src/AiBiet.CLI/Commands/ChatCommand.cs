@@ -3,6 +3,8 @@ using System.Text.Json;
 
 using AiBiet.CLI.Infrastructure;
 using AiBiet.Core.Domain.Models;
+using AiBiet.Core.Interfaces;
+using AiBiet.Infrastructure;
 
 using Spectre.Console;
 using Spectre.Console.Cli;
@@ -90,7 +92,12 @@ internal class ChatCommand : AsyncCommand<ChatCommandSettings>
                     .SpinnerStyle(Style.Parse("cyan"))
                     .StartAsync("Thinking...", async _ =>
                     {
-                        var response = await provider.ChatAsync(model, history, cancellationToken).ConfigureAwait(false);
+                        var request = new ChatRequest { Model = model };
+                        foreach (var msg in history)
+                        {
+                            request.Messages.Add(msg);
+                        }
+                        var response = await provider.ChatAsync(request, cancellationToken).ConfigureAwait(false);
                         responseText = response.Content;
                     }).ConfigureAwait(false);
 

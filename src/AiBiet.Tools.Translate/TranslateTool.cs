@@ -62,18 +62,18 @@ public class TranslateTool : ITool<TranslateSettings>
         await AnsiConsole.Status()
             .StartAsync("Translating...", async _ =>
             {
-                try
-                {
-                    var response = await _context.AiProvider.AskAsync(
-                        "",
-                        prompt,
-                        cancellationToken).ConfigureAwait(false);
+                var response = await _context.AiProvider.AskAsync(
+                    prompt,
+                    null,
+                    cancellationToken).ConfigureAwait(false);
 
+                if (response.IsSuccess)
+                {
                     translatedText = response.Content.Trim();
                 }
-                catch (Exception ex)
+                else
                 {
-                    AnsiConsole.MarkupLine($"[red]Error during translation: {ex.Message}[/]");
+                    AnsiConsole.MarkupLine($"[red]Error during translation: {response.ErrorMessage}[/]");
                 }
             }).ConfigureAwait(false);
 

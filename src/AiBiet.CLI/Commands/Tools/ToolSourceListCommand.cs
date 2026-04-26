@@ -1,4 +1,7 @@
 using AiBiet.CLI.Infrastructure;
+using AiBiet.Core.Domain.Models;
+using AiBiet.Core.Interfaces;
+using AiBiet.Infrastructure;
 
 using Spectre.Console;
 using Spectre.Console.Cli;

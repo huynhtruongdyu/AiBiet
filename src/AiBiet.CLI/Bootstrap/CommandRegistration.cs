@@ -16,8 +16,8 @@ internal static class CommandRegistration
         config.AddCommand<ChatCommand>("chat")
             .WithDescription("Start an interactive chat session");
 
-        config.AddCommand<ModelsCommand>("models")
-            .WithDescription("List available models");
+        // config.AddCommand<ModelsCommand>("models")
+        //     .WithDescription("List available models");
 
         config.AddCommand<ConfigCommand>("config")
             .WithDescription("Show current configurations");

@@ -1,6 +1,6 @@
 using System.ComponentModel;
 
-using AiBiet.CLI.Infrastructure;
+using AiBiet.Core.Domain.Models;
 using AiBiet.Core.Interfaces;
 
 using Spectre.Console;
@@ -15,45 +15,29 @@ internal class ToolListSettings : CommandSettings
     public bool Online { get; set; }
 }
 
-internal class ToolListCommand : AsyncCommand<ToolListSettings>
+internal class ToolListCommand(IToolManager toolManager) : AsyncCommand<ToolListSettings>
 {
-    private readonly AiBietConfig _config;
-    private readonly IToolScanner _toolScanner;
-
-    public ToolListCommand(AiBietConfig config, IToolScanner toolScanner)
-    {
-        _config = config;
-        _toolScanner = toolScanner;
-    }
+    private readonly IToolManager _toolManager = toolManager;
 
     protected override async Task<int> ExecuteAsync(CommandContext context, ToolListSettings settings, CancellationToken cancellationToken)
     {
-        var installedTools = (await _toolScanner.ScanAsync([_config.ToolsPath], cancellationToken).ConfigureAwait(false))
-            .Select(t => t.Name)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-        var sources = settings.Online
-            ? _config.ToolSources
-            : [_config.ToolsPath];
-
-        if (sources.Count == 0)
+        List<(string Name, string? Description, string Source)> tools;
+        if (settings.Online)
         {
-            AnsiConsole.MarkupLine("[yellow]No tool sources configured.[/]");
-            return 0;
+            var allTools = await _toolManager.ListAvailableToolsAsync(cancellationToken).ConfigureAwait(false);
+            tools = allTools.Select(t => (t.Name, t.Description, t.Source)).ToList();
         }
-
-        var tools = (await _toolScanner.ScanAsync(sources, cancellationToken).ConfigureAwait(false)).ToList();
+        else
+        {
+            var registrations = await _toolManager.GetToolRegistrationsAsync(cancellationToken).ConfigureAwait(false);
+            tools = registrations.Select(r => (r.Name, (string?)r.Description, "Local")).ToList();
+        }
 
         if (tools.Count == 0)
         {
-            if (settings.Online)
-            {
-                AnsiConsole.MarkupLine("[yellow]No tools found in configured sources.[/]");
-            }
-            else
-            {
-                AnsiConsole.MarkupLine("[yellow]No tools installed. Use [blue]--online[/] to search for available tools.[/]");
-            }
+            AnsiConsole.MarkupLine(settings.Online 
+                ? "[yellow]No tools found in configured sources.[/]" 
+                : "[yellow]No tools installed. Use [blue]--online[/] to search for available tools.[/]");
             return 0;
         }
 
@@ -62,13 +46,10 @@ internal class ToolListCommand : AsyncCommand<ToolListSettings>
         table.AddColumn("Name");
         table.AddColumn("Description");
         table.AddColumn("Source");
-        table.AddColumn("Status");
 
         foreach (var tool in tools)
         {
-            var isInstalled = installedTools.Contains(tool.Name);
-            var status = isInstalled ? "[green]Installed[/]" : "[blue]Available[/]";
-            table.AddRow(tool.Name, tool.Description ?? "", tool.Source, status);
+            table.AddRow(tool.Name, tool.Description ?? "", tool.Source);
         }
 
         AnsiConsole.Write(table);

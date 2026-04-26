@@ -10,7 +10,7 @@ namespace AiBiet.Providers.Gemini;
 public sealed class GeminiProvider : IAiProvider
 {
     private const string FallbackBaseUrl = "https://generativelanguage.googleapis.com/v1beta";
-    private const string FallbackModel = "gemini-2.0-flash";
+    private const string FallbackModel = "gemini-flash-latest";
 
     private static readonly JsonSerializerOptions _jsonOptions = new()
     {
@@ -38,21 +38,14 @@ public sealed class GeminiProvider : IAiProvider
     }
 
     /// <inheritdoc />
-    public async Task<ChatResponse> AskAsync(string model, string prompt, CancellationToken cancellationToken = default)
+    public async Task<ChatResponse> ChatAsync(ChatRequest request, CancellationToken cancellationToken = default)
     {
-        var messages = new[] { ChatMessage.User(prompt) };
-        return await ChatAsync(model, messages, cancellationToken).ConfigureAwait(false);
-    }
+        ArgumentNullException.ThrowIfNull(request);
 
-    /// <inheritdoc />
-    public async Task<ChatResponse> ChatAsync(string model, IEnumerable<ChatMessage> messages, CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(messages);
-
-        var effectiveModel = string.IsNullOrWhiteSpace(model) ? _defaultModel : model;
+        var effectiveModel = string.IsNullOrWhiteSpace(request.Model) ? _defaultModel : request.Model;
         var url = $"{_baseUrl}/models/{effectiveModel}:generateContent?key={_apiKey}";
 
-        var requestBody = BuildRequestBody(messages);
+        var requestBody = BuildRequestBody(request.Messages);
         using var response = await _httpClient
             .PostAsJsonAsync(url, requestBody, _jsonOptions, cancellationToken)
             .ConfigureAwait(false);
@@ -60,9 +53,7 @@ public sealed class GeminiProvider : IAiProvider
         if (!response.IsSuccessStatusCode)
         {
             var error = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            throw new HttpRequestException(
-                $"Gemini API error {(int)response.StatusCode}: {error}",
-                null, response.StatusCode);
+            return ChatResponse.Failure($"Gemini API error {(int)response.StatusCode}: {error}");
         }
 
         var result = await response.Content
@@ -72,11 +63,7 @@ public sealed class GeminiProvider : IAiProvider
         var text = result?.Candidates?.FirstOrDefault()?.Content?.Parts?.FirstOrDefault()?.Text
                    ?? string.Empty;
 
-        return new ChatResponse
-        {
-            Content = text,
-            Model = effectiveModel
-        };
+        return ChatResponse.Success(text, effectiveModel);
     }
 
 

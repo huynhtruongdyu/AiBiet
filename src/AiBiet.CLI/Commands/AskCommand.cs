@@ -1,11 +1,13 @@
 using System.ComponentModel;
 using System.Text.Json;
 
-using Spectre.Console;
-using Spectre.Console.Cli;
-
 using AiBiet.CLI.Infrastructure;
 using AiBiet.Core.Domain.Models;
+using AiBiet.Core.Interfaces;
+using AiBiet.Infrastructure;
+
+using Spectre.Console;
+using Spectre.Console.Cli;
 
 namespace AiBiet.CLI.Commands;
 
@@ -69,17 +71,14 @@ internal class AskCommand : AsyncCommand<AskCommandSettings>
                 {
                     if (format == OutputFormat.PlainText)
                     {
-                        var messages = new[]
-                        {
-                            ChatMessage.System("Avoid using Markdown formatting like headers, bold, italics, or code blocks. Provide your response in plain text only."),
-                            ChatMessage.User(settings.Prompt)
-                        };
-                        var response = await provider.ChatAsync(model, messages, cancellationToken).ConfigureAwait(false);
+                        var request = ChatRequest.FromPrompt(settings.Prompt, model);
+                        request.Messages.Insert(0, ChatMessage.System("Avoid using Markdown formatting like headers, bold, italics, or code blocks. Provide your response in plain text only."));
+                        var response = await provider.ChatAsync(request, cancellationToken).ConfigureAwait(false);
                         responseText = response.Content;
                     }
                     else
                     {
-                        var response = await provider.AskAsync(model, settings.Prompt, cancellationToken).ConfigureAwait(false);
+                        var response = await provider.AskAsync(settings.Prompt, model, cancellationToken).ConfigureAwait(false);
                         responseText = response.Content;
                     }
                 }).ConfigureAwait(false);

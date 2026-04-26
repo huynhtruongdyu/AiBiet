@@ -6,7 +6,8 @@ public interface IAiProvider
 {
     string Name { get; }
 
-    Task<ChatResponse> AskAsync(string model, string prompt, CancellationToken cancellationToken = default);
+    Task<ChatResponse> ChatAsync(ChatRequest request, CancellationToken cancellationToken = default);
 
-    Task<ChatResponse> ChatAsync(string model, IEnumerable<ChatMessage> messages, CancellationToken cancellationToken = default);
+    Task<ChatResponse> AskAsync(string prompt, string? model = null, CancellationToken cancellationToken = default)
+        => ChatAsync(ChatRequest.FromPrompt(prompt, model), cancellationToken);
 }

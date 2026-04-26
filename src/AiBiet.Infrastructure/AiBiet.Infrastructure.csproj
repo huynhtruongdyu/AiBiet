@@ -6,4 +6,15 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\AiBiet.Core\AiBiet.Core.csproj" />
+    <ProjectReference Include="..\AiBiet.Providers.Gemini\AiBiet.Providers.Gemini.csproj" />
+    <ProjectReference Include="..\AiBiet.Providers.Ollama\AiBiet.Providers.Ollama.csproj" />
+    <ProjectReference Include="..\AiBiet.Providers.OpenAI\AiBiet.Providers.OpenAI.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Http" />
+  </ItemGroup>
+
 </Project>

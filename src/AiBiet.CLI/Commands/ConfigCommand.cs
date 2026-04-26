@@ -2,6 +2,9 @@ using System.ComponentModel;
 
 
 using AiBiet.CLI.Infrastructure;
+using AiBiet.Core.Domain.Models;
+using AiBiet.Core.Interfaces;
+using AiBiet.Infrastructure;
 
 using Spectre.Console;
 using Spectre.Console.Cli;
@@ -76,7 +79,7 @@ internal class ConfigCommand : AsyncCommand<ConfigSettings>
             {
                 if (string.Equals(provider, _config.DefaultProvider, StringComparison.OrdinalIgnoreCase))
                 {
-                    _config.DefaultProvider = "ollama";
+                    _config.DefaultProvider = "";
                 }
                 await ConfigBootstrapper.SaveAsync(_config).ConfigureAwait(false);
                 AnsiConsole.MarkupLine($"[green]Configuration for provider '{provider}' cleared![/]");

@@ -1,8 +1,9 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-using Microsoft.Extensions.Configuration;
+using AiBiet.Core.Domain.Models;
 
+using Microsoft.Extensions.Configuration;
 
 namespace AiBiet.CLI.Infrastructure;
 
@@ -82,7 +83,6 @@ internal static class ConfigBootstrapper
         }
         """;
 
-
         await File.WriteAllTextAsync(schemaPath, schemaContent).ConfigureAwait(false);
 
         if (!File.Exists(configPath))
@@ -127,12 +127,6 @@ internal static class ConfigBootstrapper
         if (!Directory.Exists(config.ToolsPath))
         {
             Directory.CreateDirectory(config.ToolsPath);
-        }
-
-        // Ensure ToolsPath is in ToolSources
-        if (!config.ToolSources.Contains(config.ToolsPath))
-        {
-            config.ToolSources.Add(config.ToolsPath);
         }
 
         return config;

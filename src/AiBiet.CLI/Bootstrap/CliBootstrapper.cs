@@ -1,4 +1,5 @@
 using AiBiet.CLI.Infrastructure;
+using AiBiet.Core.Domain.Models;
 using AiBiet.Core.Interfaces;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -12,15 +13,13 @@ internal static class CliBootstrapper
     public static CommandApp Build(ServiceCollection services)
     {
         var registrar = new TypeRegistrar(services);
-
         var app = new CommandApp(registrar);
 
-        // Build a temporary service provider to scan and register tools
+        // Scan and register tools during bootstrap
         using var serviceProvider = services.BuildServiceProvider();
-        var appConfig = serviceProvider.GetRequiredService<AiBietConfig>();
-        var toolScanner = serviceProvider.GetRequiredService<IToolScanner>();
+        var toolManager = serviceProvider.GetRequiredService<IToolManager>();
 
-        var toolRegistrations = toolScanner.GetToolRegistrationsAsync(appConfig.ToolSources).GetAwaiter().GetResult();
+        var toolRegistrations = toolManager.GetToolRegistrationsAsync().GetAwaiter().GetResult();
 
         app.Configure(config =>
         {

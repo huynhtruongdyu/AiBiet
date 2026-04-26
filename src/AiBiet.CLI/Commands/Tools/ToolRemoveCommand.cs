@@ -1,6 +1,5 @@
 using System.ComponentModel;
 
-using AiBiet.CLI.Infrastructure;
 using AiBiet.Core.Interfaces;
 
 using Spectre.Console;
@@ -15,10 +14,9 @@ internal class ToolRemoveSettings : CommandSettings
     public string ToolName { get; set; } = "";
 }
 
-internal class ToolRemoveCommand(AiBietConfig config, IToolScanner toolScanner) : AsyncCommand<ToolRemoveSettings>
+internal class ToolRemoveCommand(IToolManager toolManager) : AsyncCommand<ToolRemoveSettings>
 {
-    private readonly AiBietConfig _config = config;
-    private readonly IToolScanner _toolScanner = toolScanner;
+    private readonly IToolManager _toolManager = toolManager;
 
     protected override async Task<int> ExecuteAsync(CommandContext context, ToolRemoveSettings settings, CancellationToken cancellationToken)
     {
@@ -27,29 +25,14 @@ internal class ToolRemoveCommand(AiBietConfig config, IToolScanner toolScanner) 
         await AnsiConsole.Status()
             .StartAsync($"Removing tool '{toolName}'...", async ctx =>
             {
-                var tool = await _toolScanner.FindToolAsync(toolName, [_config.ToolsPath], cancellationToken).ConfigureAwait(false);
-
-                if (tool == null)
+                var success = await _toolManager.RemoveToolAsync(toolName, cancellationToken).ConfigureAwait(false);
+                if (success)
+                {
+                    AnsiConsole.MarkupLine($"[green]Successfully removed tool '{toolName}'.[/]");
+                }
+                else
                 {
                     AnsiConsole.MarkupLine($"[red]Tool '{toolName}' is not installed.[/]");
-                    return;
-                }
-
-                try
-                {
-                    if (File.Exists(tool.PackagePath))
-                    {
-                        File.Delete(tool.PackagePath);
-                        AnsiConsole.MarkupLine($"[green]Successfully removed tool '{toolName}'.[/]");
-                    }
-                    else
-                    {
-                        AnsiConsole.MarkupLine($"[red]Package file not found: {tool.PackagePath}[/]");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    AnsiConsole.MarkupLine($"[red]Failed to remove tool: {ex.Message}[/]");
                 }
             }).ConfigureAwait(false);
 
