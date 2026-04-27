@@ -41,18 +41,15 @@ internal static class CommandRegistration
             {
                 source.SetDescription("Manage tool sources");
 
-                // source.AddCommand<ToolSourceAddCommand>("add")
-                //     .WithDescription("Add tool sources");
+                source.AddCommand<ToolSourceAddCommand>("add")
+                    .WithDescription("Add tool sources");
 
-                // source.AddCommand<ToolSourceRemoveCommand>("remove")
-                //     .WithDescription("Remove tool sources");
+                source.AddCommand<ToolSourceRemoveCommand>("remove")
+                    .WithDescription("Remove tool sources");
 
                 source.AddCommand<ToolSourceListCommand>("list")
                     .WithDescription("List tool sources");
             });
-
-            // tools.AddCommand<ToolInstallCommand>("install")
-            //     .WithDescription("Install a tool");
 
             tools.AddCommand<ToolAddCommand>("add")
                 .WithDescription("Add/Install a tool");

@@ -106,7 +106,9 @@ internal static class ConfigBootstrapper
                   "DefaultModel": ""
                 }
               },
-              "ToolSources": []
+              "ToolSources": [
+                "https://apiint.nugettest.org/v3/index.json"
+              ]
             }
             """;
             await File.WriteAllTextAsync(configPath, defaultConfig).ConfigureAwait(false);

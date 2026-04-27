@@ -2,6 +2,7 @@
 
 CONFIG := Release
 TFM := net10.0
+VERSION := 0.1.1
 
 OUT := bin/$(CONFIG)/$(TFM)
 PACKAGES_DIR := ../../packages
@@ -21,4 +22,8 @@ clean:
 # 	rm -f $(PLUGINS_DIR)/*.pdb
 
 push-github:
-	dotnet nuget push $(PACKAGES_DIR)/AiBiet.Tools.Translate.0.1.0.nupkg --source github --api-key [GITHUB_PAT]
+	dotnet nuget push $(PACKAGES_DIR)/AiBiet.Tools.Translate.$(VERSION).nupkg --source github --api-key [GITHUB_PAT]
+
+
+push-nuget-test:
+	dotnet nuget push $(PACKAGES_DIR)/AiBiet.Tools.Translate.$(VERSION).nupkg --source nuget-test --api-key [NUGETTEST_PAT]
