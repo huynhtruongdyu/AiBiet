@@ -73,14 +73,14 @@ public class TranslateTool : ITool<TranslateSettings>
                 }
                 else
                 {
-                    AnsiConsole.MarkupLine($"[red]Error during translation: {response.ErrorMessage}[/]");
+                    AnsiConsole.MarkupLine($"[red]Error during translation:[/] {Markup.Escape(response.ErrorMessage ?? "Unknown error")}");
                 }
             }).ConfigureAwait(false);
 
         if (!string.IsNullOrWhiteSpace(translatedText))
         {
             AnsiConsole.WriteLine();
-            AnsiConsole.Write(new Panel(translatedText)
+            AnsiConsole.Write(new Panel(new Text(translatedText))
             {
                 Header = new PanelHeader($"Translation ({settings.To})"),
                 Border = BoxBorder.Rounded,

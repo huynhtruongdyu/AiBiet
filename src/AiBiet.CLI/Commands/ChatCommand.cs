@@ -67,7 +67,7 @@ internal class ChatCommand : AsyncCommand<ChatCommandSettings>
             history.Add(ChatMessage.System(systemPrompt));
             if (!string.IsNullOrWhiteSpace(settings.SystemPrompt))
             {
-                AnsiConsole.MarkupLine($"[dim italic]System: {settings.SystemPrompt}[/]\n");
+                AnsiConsole.MarkupLine($"[dim italic]System:[/] {Markup.Escape(settings.SystemPrompt)}\n");
             }
         }
 
