@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -52,6 +53,11 @@ public sealed class GeminiProvider : IAiProvider
 
         if (!response.IsSuccessStatusCode)
         {
+            if (response.StatusCode == HttpStatusCode.TooManyRequests)
+            {
+                return ChatResponse.Failure("Gemini API: Too many requests. Please wait a moment or check your quota (429).");
+            }
+            
             var error = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
             return ChatResponse.Failure($"Gemini API error {(int)response.StatusCode}: {error}");
         }

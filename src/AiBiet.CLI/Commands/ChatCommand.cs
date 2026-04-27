@@ -98,11 +98,22 @@ internal class ChatCommand : AsyncCommand<ChatCommandSettings>
                             request.Messages.Add(msg);
                         }
                         var response = await provider.ChatAsync(request, cancellationToken).ConfigureAwait(false);
-                        responseText = response.Content;
+                        if (response.IsSuccess)
+                        {
+                            responseText = response.Content;
+                        }
+                        else
+                        {
+                            AnsiConsole.MarkupLine($"\n[red]AI Error:[/] {Markup.Escape(response.ErrorMessage ?? "Unknown error")}");
+                            responseText = string.Empty;
+                        }
                     }).ConfigureAwait(false);
 
-                history.Add(ChatMessage.Assistant(responseText));
-                allResponses.Add(responseText);
+                if (!string.IsNullOrEmpty(responseText))
+                {
+                    history.Add(ChatMessage.Assistant(responseText));
+                    allResponses.Add(responseText);
+                }
 
                 // Output based on format (except for file - handled at end)
                 if (format != OutputFormat.File)

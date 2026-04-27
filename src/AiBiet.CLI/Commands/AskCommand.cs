@@ -74,12 +74,28 @@ internal class AskCommand : AsyncCommand<AskCommandSettings>
                         var request = ChatRequest.FromPrompt(settings.Prompt, model);
                         request.Messages.Insert(0, ChatMessage.System("Avoid using Markdown formatting like headers, bold, italics, or code blocks. Provide your response in plain text only."));
                         var response = await provider.ChatAsync(request, cancellationToken).ConfigureAwait(false);
-                        responseText = response.Content;
+                        if (response.IsSuccess)
+                        {
+                            responseText = response.Content;
+                        }
+                        else
+                        {
+                            AnsiConsole.MarkupLine($"\n[red]AI Error:[/] {Markup.Escape(response.ErrorMessage ?? "Unknown error")}");
+                            responseText = string.Empty;
+                        }
                     }
                     else
                     {
                         var response = await provider.AskAsync(settings.Prompt, model, cancellationToken).ConfigureAwait(false);
-                        responseText = response.Content;
+                        if (response.IsSuccess)
+                        {
+                            responseText = response.Content;
+                        }
+                        else
+                        {
+                            AnsiConsole.MarkupLine($"\n[red]AI Error:[/] {Markup.Escape(response.ErrorMessage ?? "Unknown error")}");
+                            responseText = string.Empty;
+                        }
                     }
                 }).ConfigureAwait(false);
 
