@@ -12,10 +12,10 @@ Built with C# and `Spectre.Console`, it offers a rich and interactive terminal e
 |---|---|---|
 | `aibiet ask` | Ask a model a single question (Gemini ready) | ✅ Ready (Gemini) |
 | `aibiet chat` | Start an interactive chat session (Gemini ready) | ✅ Ready (Gemini) |
-| `aibiet models` | List available models from configured providers | 🚧 In Progress |
+| `aibiet tool` | Manage and run agentic tools (plugins) | ✅ Ready |
 | `aibiet config` | View and manage AI provider configuration interactively | ✅ Ready |
 | `aibiet doctor` | Health-check your system, providers, and connectivity | ✅ Ready |
-| `aibiet util guid` | Generate one or more GUIDs/UUIDs with formatting options | ✅ Ready |
+| `aibiet utils` | Everyday developer utilities (GUIDs, formatting, etc.) | ✅ Ready |
 
 ---
 
@@ -29,37 +29,11 @@ Open **PowerShell** and run:
 iex (irm https://raw.githubusercontent.com/huynhtruongdyu/AiBiet/main/scripts/install-remote.ps1)
 ```
 
-This will:
-- Fetch the latest release from [GitHub Releases](https://github.com/huynhtruongdyu/AiBiet/releases)
-- Download `aibiet.exe` (a self-contained binary — no runtime needed)
-- Install it to `%USERPROFILE%\.aibiet\bin\`
-- Add that directory to your `PATH` automatically
-
-**Install a specific version:**
-```powershell
-$env:AIBIET_INSTALL_VERSION="v0.1.1"; iex (irm https://raw.githubusercontent.com/huynhtruongdyu/AiBiet/main/scripts/install-remote.ps1)
-```
-
-**Install pre-release version:**
-```powershell
-$env:AIBIET_INSTALL_PRERELEASE="1"; iex (irm https://raw.githubusercontent.com/huynhtruongdyu/AiBiet/main/scripts/install-remote.ps1)
-```
-
 > [!TIP]
 > If you get an error about scripts being disabled, run first:
 > ```powershell
 > Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
 > ```
-
-### Verify Installation
-
-Open a **new terminal** and run:
-
-```powershell
-aibiet
-```
-
-You should see the AiBiet splash screen and command list.
 
 ### Verify Installation
 
@@ -76,17 +50,6 @@ You should see the AiBiet splash screen and command list.
 ```powershell
 iex (irm https://raw.githubusercontent.com/huynhtruongdyu/AiBiet/main/scripts/uninstall-remote.ps1)
 ```
-
-This will:
-- Remove `aibiet.exe` from `%USERPROFILE%\.aibiet\bin\`
-- Remove the directory from your `PATH`
-- Optionally delete configuration settings
-
-> [!TIP]
-> If you get an error about scripts being disabled, run first:
-> ```powershell
-> Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
-> ```
 
 ---
 
@@ -146,17 +109,15 @@ Run `aibiet doctor` to diagnose your setup:
 
 ## 🏗️ Architecture
 
-AiBiet is built following **Clean Architecture** principles — separation of concerns, high testability, and a loosely coupled design where core logic is independent of UI or external services.
+AiBiet is built following **Clean Architecture** principles.
 
 | Layer | Project | Description |
 |---|---|---|
 | Presentation | `AiBiet.CLI` | CLI entry point using `Spectre.Console.Cli` |
 | Core | `AiBiet.Core` | Domain entities, abstractions, core business rules |
-| Shared | `AiBiet.SharedKernel` | Common types and utilities |
-| Application | `AiBiet.Application` | Use cases and orchestration logic |
-| Infrastructure | `AiBiet.Infrastructure` | Config management, file system access |
+| Infrastructure | `AiBiet.Infrastructure` | Config management, tool loading, etc. |
 | Providers | `AiBiet.Providers.*` | Ollama, OpenAI, Gemini integrations |
-| Tools | `AiBiet.Tools.Coding` | AI-powered coding utilities |
+| Tools | `AiBiet.Tools.*` | Extensible plugins (Translate, etc.) |
 
 ---
 

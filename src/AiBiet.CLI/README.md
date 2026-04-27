@@ -32,16 +32,6 @@ You can install or update AiBiet directly without cloning the repository by runn
 iex (irm https://raw.githubusercontent.com/huynhtruongdyu/AiBiet/main/scripts/install-remote.ps1)
 ```
 
-**Install a specific version:**
-```powershell
-$env:AIBIET_INSTALL_VERSION="v0.1.1"; iex (irm https://raw.githubusercontent.com/huynhtruongdyu/AiBiet/main/scripts/install-remote.ps1)
-```
-
-**Install pre-release version:**
-```powershell
-$env:AIBIET_INSTALL_PRERELEASE="1"; iex (irm https://raw.githubusercontent.com/huynhtruongdyu/AiBiet/main/scripts/install-remote.ps1)
-```
-
 ---
 
 If you have the repository cloned, run the installer from the **repository root**:
@@ -186,6 +176,51 @@ You can manage your settings interactively or via command-line flags.
     # Reset everything (requires confirmation)
     aibiet config --clear
     ```
+
+### Tool Management
+
+AiBiet supports dynamic tool loading (plugins). Tools are stored in `.aibiet/tools`.
+
+**List Tools:**
+List installed tools or search online.
+```bash
+# List locally installed tools
+aibiet tool list
+
+# Search for available tools online
+aibiet tool list --online
+```
+
+**Add/Install a Tool:**
+Install a tool from a NuGet source or local path.
+```bash
+aibiet tool add AiBiet.Tools.Translate
+```
+
+**Update a Tool:**
+Update an installed tool to the latest version.
+```bash
+aibiet tool update translate
+```
+
+**Remove a Tool:**
+Uninstall a tool.
+```bash
+aibiet tool remove translate
+```
+
+**Manage Tool Sources:**
+Add or remove sources (local folders or NuGet feeds) to search for tools.
+```bash
+# List current sources
+aibiet tool source list
+
+# Add a local folder as a source
+aibiet tool source add C:\my-tools
+
+# Remove a source
+aibiet tool source remove 1
+```
 
 ### Developer Utilities
 
