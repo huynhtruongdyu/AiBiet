@@ -19,3 +19,6 @@ clean:
 # 	rm -f $(PLUGINS_DIR)/*.dll
 # 	rm -f $(PLUGINS_DIR)/*.deps.json
 # 	rm -f $(PLUGINS_DIR)/*.pdb
+
+push-github:
+	dotnet nuget push $(PACKAGES_DIR)/AiBiet.Tools.Translate.0.1.0.nupkg --source github --api-key [GITHUB_PAT]

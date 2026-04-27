@@ -20,6 +20,7 @@
     <PackageProjectUrl>https://github.com/huynhtruongdyu/AiBiet</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageTags>cli;translation;aibiet</PackageTags>
   </PropertyGroup>
 
 </Project>
