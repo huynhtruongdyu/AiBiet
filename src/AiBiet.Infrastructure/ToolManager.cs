@@ -11,22 +11,10 @@ using NuGet.Protocol.Core.Types;
 
 namespace AiBiet.Infrastructure;
 
-public class ToolManager : IToolManager
+public class ToolManager(AiBietConfig config) : IToolManager
 {
-    private readonly AiBietConfig _config;
-    private readonly ISettings _nugetSettings;
-
-    public ToolManager(AiBietConfig config)
-    {
-        _config = config;
-        _nugetSettings = Settings.LoadDefaultSettings(Environment.CurrentDirectory);
-    }
-
-    private static bool IsRemoteSource(string source)
-    {
-        return Uri.TryCreate(source, UriKind.Absolute, out var uriResult)
-            && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
-    }
+    private readonly AiBietConfig _config = config;
+    private readonly ISettings _nugetSettings = Settings.LoadDefaultSettings(Environment.CurrentDirectory);
 
     public async Task<IEnumerable<ToolInfo>> ListAvailableToolsAsync(CancellationToken cancellationToken = default)
     {
@@ -36,26 +24,19 @@ public class ToolManager : IToolManager
     public async Task<IEnumerable<ToolRegistrationInfo>> GetToolRegistrationsAsync(CancellationToken cancellationToken = default)
     {
         var registrations = new List<ToolRegistrationInfo>();
-        var sources = new[] { _config.ToolsPath };
 
-        foreach (var source in sources)
+        if (Directory.Exists(_config.ToolsPath))
         {
-            if (!Directory.Exists(source)) continue;
-
-            var packages = Directory.GetFiles(source, "*.nupkg", SearchOption.AllDirectories);
-            foreach (var package in packages)
-            {
-                registrations.AddRange(ScanPackageForRegistrations(package));
-            }
+            registrations.AddRange(ScanDirectoryForRegistrations(_config.ToolsPath));
         }
 
-        return await Task.FromResult(registrations).ConfigureAwait(false);
+        return await Task.FromResult(registrations.DistinctBy(r => r.Name)).ConfigureAwait(false);
     }
 
     public async Task<bool> InstallToolAsync(string toolName, CancellationToken cancellationToken = default)
     {
-        var otherSources = _config.ToolSources.Where(s => !string.Equals(s, _config.ToolsPath, StringComparison.OrdinalIgnoreCase));
-        var tool = await FindToolAsync(toolName, otherSources, cancellationToken).ConfigureAwait(false);
+        var source = _config.ToolSources.Where(s => !IsToolsPath(s));
+        var tool = await FindToolAsync(toolName, source, cancellationToken).ConfigureAwait(false);
 
         if (tool == null) return false;
 
@@ -63,13 +44,10 @@ public class ToolManager : IToolManager
         {
             return await DownloadRemoteToolAsync(tool.Source, tool.Name, cancellationToken).ConfigureAwait(false);
         }
-        else
-        {
-            var fileName = Path.GetFileName(tool.PackagePath);
-            var destination = Path.Combine(_config.ToolsPath, fileName);
-            File.Copy(tool.PackagePath, destination, true);
-            return true;
-        }
+
+        var destination = Path.Combine(_config.ToolsPath, Path.GetFileName(tool.PackagePath));
+        File.Copy(tool.PackagePath, destination, true);
+        return true;
     }
 
     public async Task<bool> RemoveToolAsync(string toolName, CancellationToken cancellationToken = default)
@@ -83,36 +61,27 @@ public class ToolManager : IToolManager
 
     public async Task<bool> UpdateToolAsync(string toolName, CancellationToken cancellationToken = default)
     {
-        // Check if installed
-        var installedTool = await FindToolAsync(toolName, [_config.ToolsPath], cancellationToken).ConfigureAwait(false);
-        if (installedTool == null) return false;
+        var installed = await FindToolAsync(toolName, [_config.ToolsPath], cancellationToken).ConfigureAwait(false);
+        if (installed == null) return false;
 
-        // Find update
-        var otherSources = _config.ToolSources.Where(s => !string.Equals(s, _config.ToolsPath, StringComparison.OrdinalIgnoreCase));
-        var tool = await FindToolAsync(toolName, otherSources, cancellationToken).ConfigureAwait(false);
+        var source = _config.ToolSources.Where(s => !IsToolsPath(s));
+        var tool = await FindToolAsync(toolName, source, cancellationToken).ConfigureAwait(false);
         if (tool == null) return false;
 
         if (IsRemoteSource(tool.Source))
         {
-            if (File.Exists(installedTool.PackagePath))
-            {
-                File.Delete(installedTool.PackagePath);
-            }
+            if (File.Exists(installed.PackagePath)) File.Delete(installed.PackagePath);
             return await DownloadRemoteToolAsync(tool.Source, tool.Name, cancellationToken).ConfigureAwait(false);
         }
-        else
+
+        var destination = Path.Combine(_config.ToolsPath, Path.GetFileName(tool.PackagePath));
+        if (!string.Equals(installed.PackagePath, destination, StringComparison.OrdinalIgnoreCase) && File.Exists(installed.PackagePath))
         {
-            var fileName = Path.GetFileName(tool.PackagePath);
-            var destination = Path.Combine(_config.ToolsPath, fileName);
-
-            if (!string.Equals(installedTool.PackagePath, destination, StringComparison.OrdinalIgnoreCase) && File.Exists(installedTool.PackagePath))
-            {
-                File.Delete(installedTool.PackagePath);
-            }
-
-            File.Copy(tool.PackagePath, destination, true);
-            return true;
+            File.Delete(installed.PackagePath);
         }
+
+        File.Copy(tool.PackagePath, destination, true);
+        return true;
     }
 
     private async Task<IEnumerable<ToolInfo>> ScanSourcesAsync(IEnumerable<string> sources, string searchTerm, CancellationToken cancellationToken)
@@ -123,25 +92,16 @@ public class ToolManager : IToolManager
 
         foreach (var source in sources)
         {
-            var actualSource = source;
-            // Check if source is a key in NuGet.Config
-            var namedSource = configuredSources.FirstOrDefault(s => string.Equals(s.Name, source, StringComparison.OrdinalIgnoreCase));
-            if (namedSource != null)
-            {
-                actualSource = namedSource.Source;
-            }
+            var actualSource = configuredSources.FirstOrDefault(s => string.Equals(s.Name, source, StringComparison.OrdinalIgnoreCase))?.Source ?? source;
 
             if (IsRemoteSource(actualSource))
             {
-                tools.AddRange(await SearchRemotePackagesAsync(actualSource, string.IsNullOrEmpty(searchTerm) ? "AiBiet" : searchTerm, cancellationToken).ConfigureAwait(false));
+                var query = string.IsNullOrEmpty(searchTerm) ? "AiBiet" : searchTerm;
+                tools.AddRange(await SearchRemotePackagesAsync(actualSource, query, cancellationToken).ConfigureAwait(false));
             }
             else if (Directory.Exists(actualSource))
             {
-                var packages = Directory.GetFiles(actualSource, "*.nupkg", SearchOption.AllDirectories);
-                foreach (var package in packages)
-                {
-                    tools.AddRange(ScanPackage(package));
-                }
+                tools.AddRange(ScanDirectoryForInfo(actualSource));
             }
         }
         return tools;
@@ -149,128 +109,133 @@ public class ToolManager : IToolManager
 
     private async Task<ToolInfo?> FindToolAsync(string toolName, IEnumerable<string> sources, CancellationToken cancellationToken)
     {
+        var allFound = new List<ToolInfo>();
         foreach (var source in sources)
         {
             if (IsRemoteSource(source))
             {
-                var results = await SearchRemotePackagesAsync(source, toolName, cancellationToken).ConfigureAwait(false);
-                var exact = results.FirstOrDefault(t => string.Equals(t.Name, toolName, StringComparison.OrdinalIgnoreCase));
-                if (exact != null) return exact;
-
-                var partial = results.FirstOrDefault(t => t.Name.Contains(toolName, StringComparison.OrdinalIgnoreCase));
-                if (partial != null) return partial;
+                allFound.AddRange(await SearchRemotePackagesAsync(source, toolName, cancellationToken).ConfigureAwait(false));
             }
             else if (Directory.Exists(source))
             {
-                var packages = Directory.GetFiles(source, "*.nupkg", SearchOption.AllDirectories);
-                foreach (var package in packages)
-                {
-                    var found = ScanPackage(package).FirstOrDefault(t => string.Equals(t.Name, toolName, StringComparison.OrdinalIgnoreCase));
-                    if (found != null) return found;
-                }
+                allFound.AddRange(ScanDirectoryForInfo(source));
             }
         }
-        return null;
+
+        // Prioritize: 1. Exact match, 2. Starts with AiBiet.Tools. + toolName, 3. Contains toolName
+        return allFound.FirstOrDefault(t => string.Equals(t.Name, toolName, StringComparison.OrdinalIgnoreCase))
+               ?? allFound.FirstOrDefault(t => string.Equals(t.Name, $"AiBiet.Tools.{toolName}", StringComparison.OrdinalIgnoreCase))
+               ?? allFound.FirstOrDefault(t => t.Name.Contains(toolName, StringComparison.OrdinalIgnoreCase));
     }
 
-    private SourceRepository CreateRepository(string source)
+    private static IEnumerable<ToolInfo> ScanDirectoryForInfo(string path)
     {
-        var packageSourceProvider = new PackageSourceProvider(_nugetSettings);
-        var configuredSources = packageSourceProvider.LoadPackageSources();
-        
-        // Flexible matching for credentials
-        var sourceUri = new Uri(source);
-        var matchingSource = configuredSources.FirstOrDefault(s => 
-            Uri.TryCreate(s.Source, UriKind.Absolute, out var uri) && 
-            uri.GetLeftPart(UriPartial.Path).TrimEnd('/') == sourceUri.GetLeftPart(UriPartial.Path).TrimEnd('/'));
+        var results = new List<ToolInfo>();
+        var packages = Directory.GetFiles(path, "*.nupkg", SearchOption.AllDirectories);
+        foreach (var pkg in packages) results.AddRange(ScanPackageForInfo(pkg));
 
-        var packageSource = new PackageSource(source);
-        if (matchingSource != null)
+        var dlls = Directory.GetFiles(path, "*.dll", SearchOption.AllDirectories);
+        foreach (var dll in dlls) results.AddRange(DiscoverInAssembly(dll, (type, _, instance) => new ToolInfo
         {
-            packageSource.Credentials = matchingSource.Credentials;
-        }
+            Name = GetProperty(instance, "Name") ?? type.Name,
+            Description = GetProperty(instance, "Description"),
+            Source = "Local DLL",
+            PackagePath = dll
+        }));
 
-        var sourceRepositoryProvider = new SourceRepositoryProvider(packageSourceProvider, Repository.Provider.GetCoreV3());
-        return sourceRepositoryProvider.CreateRepository(packageSource);
+        return results;
     }
 
-    private async Task<IEnumerable<ToolInfo>> SearchRemotePackagesAsync(string source, string searchTerm, CancellationToken cancellationToken)
+    private static IEnumerable<ToolRegistrationInfo> ScanDirectoryForRegistrations(string path)
     {
-        var tools = new List<ToolInfo>();
+        var results = new List<ToolRegistrationInfo>();
+        var packages = Directory.GetFiles(path, "*.nupkg", SearchOption.AllDirectories);
+        foreach (var pkg in packages) results.AddRange(ScanPackageForRegistrations(pkg));
+
+        var dlls = Directory.GetFiles(path, "*.dll", SearchOption.AllDirectories);
+        foreach (var dll in dlls) results.AddRange(DiscoverInAssembly(dll, (type, settings, instance) => new ToolRegistrationInfo
+        {
+            Name = GetProperty(instance, "Name") ?? type.Name,
+            Description = GetProperty(instance, "Description") ?? "",
+            ToolType = type,
+            SettingsType = settings
+        }));
+
+        return results;
+    }
+
+    private static IEnumerable<ToolInfo> ScanPackageForInfo(string packageFile)
+    {
+        return ScanPackageContents(packageFile, dll => DiscoverInAssembly(dll, (type, _, instance) => new ToolInfo
+        {
+            Name = GetProperty(instance, "Name") ?? type.Name,
+            Description = GetProperty(instance, "Description"),
+            Source = Path.GetFileName(packageFile),
+            PackagePath = packageFile
+        }));
+    }
+
+    private static IEnumerable<ToolRegistrationInfo> ScanPackageForRegistrations(string packageFile)
+    {
+        return ScanPackageContents(packageFile, dll => DiscoverInAssembly(dll, (type, settings, instance) => new ToolRegistrationInfo
+        {
+            Name = GetProperty(instance, "Name") ?? type.Name,
+            Description = GetProperty(instance, "Description") ?? "",
+            ToolType = type,
+            SettingsType = settings
+        }));
+    }
+
+    private static IEnumerable<T> ScanPackageContents<T>(string packageFile, Func<string, IEnumerable<T>> scanner)
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), $"aibiet_{Guid.NewGuid():N}");
         try
         {
-            var sourceRepository = CreateRepository(source);
-            var searchResource = await sourceRepository.GetResourceAsync<PackageSearchResource>(cancellationToken).ConfigureAwait(false);
-            if (searchResource != null)
+            Directory.CreateDirectory(tempDir);
+            ZipFile.ExtractToDirectory(packageFile, tempDir);
+            return Directory.GetFiles(tempDir, "*.dll", SearchOption.AllDirectories).SelectMany(scanner).ToList();
+        }
+        catch { return []; }
+        finally
+        {
+            if (Directory.Exists(tempDir))
             {
-                var searchFilter = new SearchFilter(includePrerelease: true);
-                var results = await searchResource.SearchAsync(
-                    searchTerm,
-                    searchFilter,
-                    0,
-                    20,
-                    NullLogger.Instance,
-                    cancellationToken).ConfigureAwait(false);
-
-                foreach (var result in results)
-                {
-                    tools.Add(new ToolInfo
-                    {
-                        Name = result.Identity.Id,
-                        Description = result.Description ?? result.Title,
-                        Source = source,
-                        PackagePath = ""
-                    });
-                }
+                try { Directory.Delete(tempDir, true); }
+                catch { /* Ignore cleanup errors as this is a best-effort operation in a temp folder */ }
             }
         }
-        catch { /* Ignore remote errors */ }
-        return tools;
     }
 
-    private async Task<bool> DownloadRemoteToolAsync(string source, string packageId, CancellationToken cancellationToken)
+    private static IEnumerable<T> DiscoverInAssembly<T>(string dllFile, Func<Type, Type, object, T> mapper)
     {
+        var fileName = Path.GetFileName(dllFile);
+        if (!fileName.StartsWith("AiBiet.Tools.", StringComparison.OrdinalIgnoreCase)) return [];
+
         try
         {
-            var sourceRepository = CreateRepository(source);
-            var resource = await sourceRepository.GetResourceAsync<FindPackageByIdResource>(cancellationToken).ConfigureAwait(false);
-            if (resource == null) return false;
-
-            using var cacheContext = new SourceCacheContext();
-            var versions = await resource.GetAllVersionsAsync(packageId, cacheContext, NullLogger.Instance, cancellationToken).ConfigureAwait(false);
-            var latestVersion = versions.OrderByDescending(v => v).FirstOrDefault();
-
-            if (latestVersion == null) return false;
-
-            var fileName = $"{packageId}.{latestVersion.ToNormalizedString()}.nupkg";
-            var destination = Path.Combine(_config.ToolsPath, fileName);
-
-            using var fileStream = File.Create(destination);
-            var success = await resource.CopyNupkgToStreamAsync(
-                packageId,
-                latestVersion,
-                fileStream,
-                cacheContext,
-                NullLogger.Instance,
-                cancellationToken).ConfigureAwait(false);
-
-            return success;
+            var assembly = Assembly.Load(File.ReadAllBytes(dllFile));
+            return GetToolTypes(assembly)
+                .Where(IsToolType)
+                .Select(type =>
+                {
+                    var toolInterface = type.GetInterfaces().First(i => i.IsGenericType && (i.GetGenericTypeDefinition().Name == "ITool`1" || i.GetGenericTypeDefinition().FullName == "AiBiet.Core.Interfaces.ITool`1"));
+                    var instance = Activator.CreateInstance(type);
+                    return mapper(type, toolInterface.GetGenericArguments()[0], instance!);
+                })
+                .ToList();
         }
-        catch
-        {
-            return false;
-        }
+        catch { return []; }
     }
 
     private static IEnumerable<Type> GetToolTypes(Assembly assembly)
     {
         try
         {
-            return assembly.GetTypes().Where(t => IsToolType(t));
+            return assembly.GetTypes();
         }
         catch (ReflectionTypeLoadException ex)
         {
-            return ex.Types.Where(t => t != null && IsToolType(t))!;
+            return ex.Types.Where(t => t != null)!;
         }
         catch
         {
@@ -278,104 +243,57 @@ public class ToolManager : IToolManager
         }
     }
 
-    private static bool IsToolType(Type type)
+    private static bool IsToolType(Type t) => t is { IsClass: true, IsAbstract: false } && t.GetInterfaces().Any(i => i.IsGenericType && (i.GetGenericTypeDefinition().Name == "ITool`1" || i.GetGenericTypeDefinition().FullName == "AiBiet.Core.Interfaces.ITool`1"));
+
+    private static string? GetProperty(object? obj, string name) => obj?.GetType().GetProperty(name)?.GetValue(obj) as string;
+
+    private bool IsToolsPath(string path) => string.Equals(path, _config.ToolsPath, StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsRemoteSource(string s) => Uri.TryCreate(s, UriKind.Absolute, out var uri) && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
+
+    private SourceRepository CreateRepository(string source)
     {
-        if (type is not { IsClass: true, IsAbstract: false }) return false;
-        
-        return type.GetInterfaces().Any(i => 
-            i.IsGenericType && 
-            (i.GetGenericTypeDefinition().FullName == "AiBiet.Core.Interfaces.ITool`1" || 
-             i.GetGenericTypeDefinition().Name == "ITool`1"));
+        var provider = new PackageSourceProvider(_nugetSettings);
+        var sourceUri = new Uri(source);
+        var matching = provider.LoadPackageSources().FirstOrDefault(s => Uri.TryCreate(s.Source, UriKind.Absolute, out var uri) && uri.GetLeftPart(UriPartial.Path).TrimEnd('/') == sourceUri.GetLeftPart(UriPartial.Path).TrimEnd('/'));
+
+        var packageSource = new PackageSource(source);
+        if (matching != null) packageSource.Credentials = matching.Credentials;
+
+        return new SourceRepositoryProvider(provider, Repository.Provider.GetCoreV3()).CreateRepository(packageSource);
     }
 
-    private static IEnumerable<ToolInfo> ScanPackage(string packageFile)
+    private async Task<IEnumerable<ToolInfo>> SearchRemotePackagesAsync(string source, string searchTerm, CancellationToken cancellationToken)
     {
-        var tools = new List<ToolInfo>();
-        var tempDir = Path.Combine(Path.GetTempPath(), $"aibiet_scan_{Guid.NewGuid():N}");
-
         try
         {
-            Directory.CreateDirectory(tempDir);
-            ZipFile.ExtractToDirectory(packageFile, tempDir);
-            var dllFiles = Directory.GetFiles(tempDir, "*.dll", SearchOption.AllDirectories);
+            var repo = CreateRepository(source);
+            var search = await repo.GetResourceAsync<PackageSearchResource>(cancellationToken).ConfigureAwait(false);
+            if (search == null) return [];
 
-            foreach (var dllFile in dllFiles)
-            {
-                try
-                {
-                    var assembly = Assembly.Load(File.ReadAllBytes(dllFile));
-                    var toolTypes = GetToolTypes(assembly);
-
-                    foreach (var toolType in toolTypes)
-                    {
-                        var toolInterface = toolType.GetInterfaces().First(i => i.IsGenericType && (i.GetGenericTypeDefinition().Name == "ITool`1" || i.GetGenericTypeDefinition().FullName == "AiBiet.Core.Interfaces.ITool`1"));
-                        var toolInstance = Activator.CreateInstance(toolType);
-                        tools.Add(new ToolInfo
-                        {
-                            Name = toolInterface.GetProperty("Name")?.GetValue(toolInstance) as string ?? toolType.Name,
-                            Description = toolInterface.GetProperty("Description")?.GetValue(toolInstance) as string,
-                            Source = Path.GetFileName(packageFile),
-                            PackagePath = packageFile
-                        });
-                    }
-                }
-                catch { /* Skip failed assemblies */ }
-            }
+            var results = await search.SearchAsync(searchTerm, new SearchFilter(true), 0, 20, NullLogger.Instance, cancellationToken).ConfigureAwait(false);
+            return results.Select(r => new ToolInfo { Name = r.Identity.Id, Description = r.Description ?? r.Title, Source = source });
         }
-        finally
-        {
-            if (Directory.Exists(tempDir))
-            {
-                try { Directory.Delete(tempDir, true); } catch { /* Ignore delete errors */ }
-            }
-        }
-
-        return tools;
+        catch { return []; }
     }
 
-    private static IEnumerable<ToolRegistrationInfo> ScanPackageForRegistrations(string packageFile)
+    private async Task<bool> DownloadRemoteToolAsync(string source, string packageId, CancellationToken cancellationToken)
     {
-        var registrations = new List<ToolRegistrationInfo>();
-        var tempDir = Path.Combine(Path.GetTempPath(), $"aibiet_reg_{Guid.NewGuid():N}");
-
         try
         {
-            Directory.CreateDirectory(tempDir);
-            ZipFile.ExtractToDirectory(packageFile, tempDir);
-            var dllFiles = Directory.GetFiles(tempDir, "*.dll", SearchOption.AllDirectories);
+            var repo = CreateRepository(source);
+            var find = await repo.GetResourceAsync<FindPackageByIdResource>(cancellationToken).ConfigureAwait(false);
+            if (find == null) return false;
 
-            foreach (var dllFile in dllFiles)
-            {
-                try
-                {
-                    var assembly = Assembly.Load(File.ReadAllBytes(dllFile));
-                    var toolTypes = GetToolTypes(assembly);
+            using var cache = new SourceCacheContext();
+            var versions = await find.GetAllVersionsAsync(packageId, cache, NullLogger.Instance, cancellationToken).ConfigureAwait(false);
+            var latest = versions.OrderByDescending(v => v).FirstOrDefault();
+            if (latest == null) return false;
 
-                    foreach (var toolType in toolTypes)
-                    {
-                        var toolInterface = toolType.GetInterfaces().First(i => i.IsGenericType && (i.GetGenericTypeDefinition().Name == "ITool`1" || i.GetGenericTypeDefinition().FullName == "AiBiet.Core.Interfaces.ITool`1"));
-                        var toolInstance = Activator.CreateInstance(toolType);
-                        registrations.Add(new ToolRegistrationInfo
-                        {
-                            Name = toolInterface.GetProperty("Name")?.GetValue(toolInstance) as string ?? toolType.Name,
-                            Description = toolInterface.GetProperty("Description")?.GetValue(toolInstance) as string ?? "",
-                            ToolType = toolType,
-                            SettingsType = toolInterface.GetGenericArguments()[0]
-                        });
-                    }
-                }
-                catch { /* Skip failed assemblies */ }
-            }
+            var destination = Path.Combine(_config.ToolsPath, $"{packageId}.{latest.ToNormalizedString()}.nupkg");
+            using var file = File.Create(destination);
+            return await find.CopyNupkgToStreamAsync(packageId, latest, file, cache, NullLogger.Instance, cancellationToken).ConfigureAwait(false);
         }
-        catch { /* Skip failed packages */ }
-        finally
-        {
-            if (Directory.Exists(tempDir))
-            {
-                try { Directory.Delete(tempDir, true); } catch { /* Ignore delete errors */ }
-            }
-        }
-
-        return registrations;
+        catch { return false; }
     }
 }

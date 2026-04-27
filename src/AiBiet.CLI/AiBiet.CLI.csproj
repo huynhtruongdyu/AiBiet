@@ -9,7 +9,7 @@
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>aibiet</ToolCommandName>
     <PackageId>AiBiet.CLI</PackageId>
-    <Version>0.3.2</Version>
+    <Version>0.3.3</Version>
     <PackageOutputPath>$(MSBuildProjectDirectory)/../../packages</PackageOutputPath>
 
     <!-- Self-contained single-file publish (no AOT — Spectre.Console.Cli is not AOT-compatible) -->
