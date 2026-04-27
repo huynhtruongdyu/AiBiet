@@ -262,6 +262,32 @@ public class ToolManager : IToolManager
         }
     }
 
+    private static IEnumerable<Type> GetToolTypes(Assembly assembly)
+    {
+        try
+        {
+            return assembly.GetTypes().Where(t => IsToolType(t));
+        }
+        catch (ReflectionTypeLoadException ex)
+        {
+            return ex.Types.Where(t => t != null && IsToolType(t))!;
+        }
+        catch
+        {
+            return [];
+        }
+    }
+
+    private static bool IsToolType(Type type)
+    {
+        if (type is not { IsClass: true, IsAbstract: false }) return false;
+        
+        return type.GetInterfaces().Any(i => 
+            i.IsGenericType && 
+            (i.GetGenericTypeDefinition().FullName == "AiBiet.Core.Interfaces.ITool`1" || 
+             i.GetGenericTypeDefinition().Name == "ITool`1"));
+    }
+
     private static IEnumerable<ToolInfo> ScanPackage(string packageFile)
     {
         var tools = new List<ToolInfo>();
@@ -278,22 +304,19 @@ public class ToolManager : IToolManager
                 try
                 {
                     var assembly = Assembly.Load(File.ReadAllBytes(dllFile));
-                    var toolTypes = assembly.GetTypes().Where(t => t is { IsClass: true, IsAbstract: false } && t.GetInterface("AiBiet.Core.Interfaces.ITool`1") != null);
+                    var toolTypes = GetToolTypes(assembly);
 
                     foreach (var toolType in toolTypes)
                     {
-                        var toolInterface = toolType.GetInterface("AiBiet.Core.Interfaces.ITool`1");
-                        if (toolInterface != null)
+                        var toolInterface = toolType.GetInterfaces().First(i => i.IsGenericType && (i.GetGenericTypeDefinition().Name == "ITool`1" || i.GetGenericTypeDefinition().FullName == "AiBiet.Core.Interfaces.ITool`1"));
+                        var toolInstance = Activator.CreateInstance(toolType);
+                        tools.Add(new ToolInfo
                         {
-                            var toolInstance = Activator.CreateInstance(toolType);
-                            tools.Add(new ToolInfo
-                            {
-                                Name = toolInterface.GetProperty("Name")?.GetValue(toolInstance) as string ?? toolType.Name,
-                                Description = toolInterface.GetProperty("Description")?.GetValue(toolInstance) as string,
-                                Source = Path.GetFileName(packageFile),
-                                PackagePath = packageFile
-                            });
-                        }
+                            Name = toolInterface.GetProperty("Name")?.GetValue(toolInstance) as string ?? toolType.Name,
+                            Description = toolInterface.GetProperty("Description")?.GetValue(toolInstance) as string,
+                            Source = Path.GetFileName(packageFile),
+                            PackagePath = packageFile
+                        });
                     }
                 }
                 catch { /* Skip failed assemblies */ }
@@ -326,22 +349,19 @@ public class ToolManager : IToolManager
                 try
                 {
                     var assembly = Assembly.Load(File.ReadAllBytes(dllFile));
-                    var toolTypes = assembly.GetTypes().Where(t => t is { IsClass: true, IsAbstract: false } && t.GetInterface("AiBiet.Core.Interfaces.ITool`1") != null);
+                    var toolTypes = GetToolTypes(assembly);
 
                     foreach (var toolType in toolTypes)
                     {
-                        var toolInterface = toolType.GetInterface("AiBiet.Core.Interfaces.ITool`1");
-                        if (toolInterface != null)
+                        var toolInterface = toolType.GetInterfaces().First(i => i.IsGenericType && (i.GetGenericTypeDefinition().Name == "ITool`1" || i.GetGenericTypeDefinition().FullName == "AiBiet.Core.Interfaces.ITool`1"));
+                        var toolInstance = Activator.CreateInstance(toolType);
+                        registrations.Add(new ToolRegistrationInfo
                         {
-                            var toolInstance = Activator.CreateInstance(toolType);
-                            registrations.Add(new ToolRegistrationInfo
-                            {
-                                Name = toolInterface.GetProperty("Name")?.GetValue(toolInstance) as string ?? toolType.Name,
-                                Description = toolInterface.GetProperty("Description")?.GetValue(toolInstance) as string ?? "",
-                                ToolType = toolType,
-                                SettingsType = toolInterface.GetGenericArguments()[0]
-                            });
-                        }
+                            Name = toolInterface.GetProperty("Name")?.GetValue(toolInstance) as string ?? toolType.Name,
+                            Description = toolInterface.GetProperty("Description")?.GetValue(toolInstance) as string ?? "",
+                            ToolType = toolType,
+                            SettingsType = toolInterface.GetGenericArguments()[0]
+                        });
                     }
                 }
                 catch { /* Skip failed assemblies */ }
