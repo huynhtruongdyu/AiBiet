@@ -7,14 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed
-- Resolve bundled assemblies for single-file executables
-- Register tool commands with DI container for proper resolution
-- Handle Gemini 429 errors and improve AI response display
-- Escape AI output to prevent Spectre.Console markup errors
-
 ### Docs
 - Add project context document for architecture and structure reference
+- Update PROJECT_CONTEXT.md and README files with latest information
+- Add CHANGELOG.md to track version history
 
 ## [0.3.7] - 2026-04-28
 
