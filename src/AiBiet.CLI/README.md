@@ -4,11 +4,12 @@ AiBiet (meaning "Who knows?" / "AI knows" in Vietnamese) is a CLI-first AI runti
 
 ## Features
 
-* **Unified AI Interface:** Chat and interact with various AI providers (Gemini, Ollama, OpenAI) through a single tool.
-* **Extensible Architecture:** Easily add new AI providers and agentic tools.
+* **Unified AI Interface:** Chat and interact with various AI providers (Gemini fully implemented, Ollama and OpenAI in development) through a single tool.
+* **Extensible Architecture:** Easily add new AI providers and agentic tools (plug and play tools system).
 * **Local Inference:** Built-in support for Ollama (local LLMs).
 * **Developer Utilities:** A collection of handy offline tools (like GUID generators, encoders, etc.).
 * **Beautiful Terminal UI:** Built with `Spectre.Console` for rich, interactive console output.
+* **Health Check:** Built-in `doctor` command to diagnose system, providers, and connectivity.
 
 ---
 
@@ -105,21 +106,28 @@ On the first run, it automatically creates a default configuration file and a JS
 ```json
 {
   "$schema": "./config.schema.json",
-  "DefaultProvider": "ollama",
+  "DefaultProvider": "",
   "Providers": {
+    "gemini": {
+      "ApiKey": "",
+      "DefaultModel": ""
+    },
     "ollama": {
-      "ApiUrl": "http://localhost:11434"
+      "ApiUrl": "http://localhost:11434",
+      "DefaultModel": ""
     },
     "openai": {
       "ApiUrl": "https://api.openai.com/v1",
-      "ApiKey": ""
-    },
-    "gemini": {
-      "ApiKey": ""
+      "ApiKey": "",
+      "DefaultModel": ""
     }
-  }
+  },
+  "ToolSources": ["https://apiint.nugettest.org/v3/index.json"]
 }
 ```
+
+> [!NOTE]
+> Gemini is currently the only fully implemented AI provider. Ollama and OpenAI provider projects exist but are not yet implemented.
 
 ---
 
@@ -237,6 +245,12 @@ aibiet utils guid --count 5 --uppercase --no-dashes --braces
 # Or using shorthand:
 aibiet utils guid -c 5 -u -n -b
 ```
+
+---
+
+## Version History
+
+For a detailed version history and changes, see the [Changelog](../CHANGELOG.md).
 
 ---
 

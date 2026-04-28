@@ -129,3 +129,5 @@ Releases are automated via **GitHub Actions**. Every version tag (e.g. `v1.0.0`)
 2. Automatic creation of a [GitHub Release](https://github.com/huynhtruongdyu/AiBiet/releases) with downloadable assets
 
 For detailed CLI usage and configuration options, see the [CLI Documentation](src/AiBiet.CLI/README.md).
+
+For version history and changes, see the [Changelog](CHANGELOG.md).

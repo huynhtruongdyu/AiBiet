@@ -89,7 +89,9 @@ AiBiet/
 ├── AiBiet.slnx            # Solution file
 ├── Directory.Build.props   # Common build properties
 ├── Directory.Packages.props # Central package versions
-└── README.md              # Project documentation
+├── README.md              # Project documentation
+├── CHANGELOG.md           # Version changelog
+└── PROJECT_CONTEXT.md     # This file
 ```
 
 ---
@@ -287,9 +289,17 @@ AiBiet.Tools.*
 | Version | Date | Key Changes |
 |---------|------|-------------|
 | v0.3.7 | 2026-04-28 | Fixed single-file assembly loading for tools |
-| v0.3.6 | 2026-04-28 | (Tagged but issue not fully fixed) |
-| v0.3.5 | Earlier | Tool system improvements |
-| v0.3.0 | Earlier | Tool system introduced |
+| v0.3.6 | 2026-04-28 | Fixed tool commands DI container registration |
+| v0.3.5 | 2026-04-28 | Handle Gemini 429 errors, improve AI response display |
+| v0.3.4 | 2026-04-27 | Escape AI output to prevent Spectre.Console markup errors |
+| v0.3.3 | 2026-04-27 | Sync documentation for v0.3.0 release |
+| v0.3.2 | 2026-04-27 | Enhanced tool discovery, improved assembly scanning |
+| v0.3.1 | 2026-04-26 | NuGet support improvements, file locking fix |
+| v0.3.0 | 2026-04-25 | Plug and play tools architecture, Translate tool |
+| v0.2.0 | 2026-04-20 | Gemini integration, CLI doctor, CI/CD workflow |
+| v0.1.0 | 2026-04-15 | Initial release with Ollama, OpenAI, Gemini support |
+
+For detailed changes, see [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
