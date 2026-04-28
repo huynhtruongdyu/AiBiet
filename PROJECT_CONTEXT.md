@@ -43,6 +43,7 @@
 ┌───────┴────────────┐
 │  AiBiet.Tools.*    │
 │  - Translate       │
+│  - Commit          │
 │  - Coding (empty)  │
 └────────────────────┘
 ```
@@ -55,7 +56,7 @@
 | Core | `AiBiet.Core` | Interfaces (`ITool`, `IAiProvider`, `IToolManager`), domain models |
 | Infrastructure | `AiBiet.Infrastructure` | Tool loading, provider factory, configuration |
 | Providers | `AiBiet.Providers.*` | AI provider implementations (Gemini done, Ollama/OpenAI placeholders) |
-| Tools | `AiBiet.Tools.*` | Extensible plugins (Translate, etc.) |
+| Tools | `AiBiet.Tools.*` | Extensible plugins (Translate, Commit, etc.) |
 
 ---
 
@@ -85,6 +86,9 @@ AiBiet/
 │   ├── AiBiet.Providers.Ollama/ # Placeholder (no implementation)
 │   ├── AiBiet.Providers.OpenAI/ # Placeholder (no implementation)
 │   ├── AiBiet.Tools.Translate/ # Translate tool (working)
+│   │   └── CHANGELOG.md         # Tool version history
+│   ├── AiBiet.Tools.Commit/    # Commit tool (AI-powered git commits)
+│   │   └── CHANGELOG.md         # Tool version history
 │   └── AiBiet.Tools.Coding/ # Placeholder (empty)
 ├── AiBiet.slnx            # Solution file
 ├── Directory.Build.props   # Common build properties
@@ -121,7 +125,7 @@ Nested commands:
 - `aibiet tool source add/remove/list` - Tool source management
 - `aibiet utils guid` - Generate GUIDs
 
-**Dynamic tool commands**: After scanning installed tools, they're registered as top-level commands (e.g., `aibiet translate`).
+**Dynamic tool commands**: After scanning installed tools, they're registered as top-level commands (e.g., `aibiet translate`, `aibiet commit`).
 
 ### Tool System
 
@@ -316,6 +320,7 @@ aibiet ask "What is .NET?" -p gemini
 aibiet chat -p gemini
 aibiet tool add translate
 aibiet translate "xin chao" -t en
+aibiet commit
 aibiet config
 aibiet doctor
 ```
