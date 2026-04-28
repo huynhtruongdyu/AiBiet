@@ -30,7 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.3.4] - 2026-04-27
 
 ### Fixed
-- Escape AI output to prevent Spectre.Console markup errors in tool-translate
+- Escape AI output to prevent Spectre.Console markup errors in Translate tool
 
 ## [0.3.3] - 2026-04-27
 
@@ -61,11 +61,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.3.0] - 2026-04-25
 
 ### Added
-- Plug and play tools architecture
-- Translate tool initial implementation
+- Plug and play tools architecture with dynamic tool loading
+- Translate tool initial implementation (supports text translation between languages)
+- Tool management commands (`aibiet tool add/update/remove/list`)
 
 ### Changed
-- Refactored to achieve loose coupling
+- Refactored to achieve loose coupling between CLI, Core, and Tools
 - Clean AiBiet.CLI project structure
 
 ## [0.2.0] - 2026-04-20
