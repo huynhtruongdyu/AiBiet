@@ -1,5 +1,6 @@
 using System.IO.Compression;
 using System.Reflection;
+using System.Runtime.Loader;
 
 using AiBiet.Core.Domain.Models;
 using AiBiet.Core.Interfaces;
@@ -213,18 +214,36 @@ public class ToolManager(AiBietConfig config) : IToolManager
 
         try
         {
-            var assembly = Assembly.Load(File.ReadAllBytes(dllFile));
-            return GetToolTypes(assembly)
-                .Where(IsToolType)
-                .Select(type =>
-                {
-                    var toolInterface = type.GetInterfaces().First(i => i.IsGenericType && (i.GetGenericTypeDefinition().Name == "ITool`1" || i.GetGenericTypeDefinition().FullName == "AiBiet.Core.Interfaces.ITool`1"));
-                    var instance = Activator.CreateInstance(type);
-                    return mapper(type, toolInterface.GetGenericArguments()[0], instance!);
-                })
-                .ToList();
+            // For single-file executables, dependencies like AiBiet.Core are bundled.
+            // We need to handle assembly resolution by checking already-loaded assemblies.
+            AssemblyLoadContext.Default.Resolving += ResolveBundledAssembly;
+            try
+            {
+                var assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(dllFile);
+                
+                return GetToolTypes(assembly)
+                    .Where(IsToolType)
+                    .Select(type =>
+                    {
+                        var toolInterface = type.GetInterfaces().First(i => i.IsGenericType && (i.GetGenericTypeDefinition().Name == "ITool`1" || i.GetGenericTypeDefinition().FullName == "AiBiet.Core.Interfaces.ITool`1"));
+                        var instance = Activator.CreateInstance(type);
+                        return mapper(type, toolInterface.GetGenericArguments()[0], instance!);
+                    })
+                    .ToList();
+            }
+            finally
+            {
+                AssemblyLoadContext.Default.Resolving -= ResolveBundledAssembly;
+            }
         }
         catch { return []; }
+    }
+
+    private static Assembly? ResolveBundledAssembly(AssemblyLoadContext context, AssemblyName assemblyName)
+    {
+        // For single-file executables, check already-loaded assemblies
+        return AppDomain.CurrentDomain.GetAssemblies()
+            .FirstOrDefault(a => a.GetName().Name == assemblyName.Name);
     }
 
     private static IEnumerable<Type> GetToolTypes(Assembly assembly)
