@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace AiBiet.Tools.Commit;
+namespace AiBiet.Core.Utilities;
 
 public static class GitService
 {

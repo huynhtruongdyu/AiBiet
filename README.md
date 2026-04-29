@@ -16,6 +16,7 @@ Built with C# and `Spectre.Console`, it offers a rich and interactive terminal e
 | `aibiet config` | View and manage AI provider configuration interactively | ✅ Ready |
 | `aibiet doctor` | Health-check your system, providers, and connectivity | ✅ Ready |
 | `aibiet utils` | Everyday developer utilities (GUIDs, formatting, etc.) | ✅ Ready |
+| `aibiet security` | AI-powered security vulnerability scanner | ✅ Ready |
 
 ---
 

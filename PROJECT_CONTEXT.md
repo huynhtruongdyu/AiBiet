@@ -34,7 +34,7 @@
 │  - AiProviderResolver (resolves default/specified provider)│
 └────────────┬───────────────┬───────────────────────────────┘
              │               │
-┌────────────┴────────┐  ┌──┴─────────────────────────────────┐
+┌────────────┴────────┐  ┌───┴────────────────────────────────┐
 │   AiBiet.Core       │  │  AiBiet.Providers.Gemini           │
 │  - Interfaces       │  │  (only fully implemented provider) │
 │  - Domain Models    │  └────────────────────────────────────┘
@@ -44,8 +44,12 @@
 │  AiBiet.Tools.*    │
 │  - Translate       │
 │  - Commit          │
+│  - Security        │
 │  - Coding (empty)  │
 └────────────────────┘
+
+### Shared Utilities (AiBiet.Core/Utilities/)
+- `GitService`: Shared git operations (get diffs, check changes) moved from AiBiet.Tools.Commit to core for cross-tool reuse
 ```
 
 ### Layer Responsibilities
@@ -80,7 +84,8 @@ AiBiet/
 │   │   └── Program.cs     # Entry point
 │   ├── AiBiet.Core/        # Interfaces and domain models
 │   │   ├── Interfaces/    # ITool, IAiProvider, IToolManager, IAiProviderFactory
-│   │   └── Domain/Models/ # AiBietConfig, ChatRequest/Response, ToolInfo, etc.
+│   │   ├── Domain/Models/ # AiBietConfig, ChatRequest/Response, ToolInfo, etc.
+│   │   └── Utilities/      # Shared utilities (GitService, etc.)
 │   ├── AiBiet.Infrastructure/ # ToolManager, AiProviderFactory
 │   ├── AiBiet.Providers.Gemini/ # Gemini API implementation
 │   ├── AiBiet.Providers.Ollama/ # Placeholder (no implementation)
@@ -88,6 +93,8 @@ AiBiet/
 │   ├── AiBiet.Tools.Translate/ # Translate tool (working)
 │   │   └── CHANGELOG.md         # Tool version history
 │   ├── AiBiet.Tools.Commit/    # Commit tool (AI-powered git commits)
+│   │   └── CHANGELOG.md         # Tool version history
+│   ├── AiBiet.Tools.Security/ # Security tool (AI vulnerability scanner)
 │   │   └── CHANGELOG.md         # Tool version history
 │   └── AiBiet.Tools.Coding/ # Placeholder (empty)
 ├── AiBiet.slnx            # Solution file
@@ -151,6 +158,23 @@ public interface ITool<in TSettings> where TSettings : CommandSettings
 2. **Discovery**: Scan `~/.aibiet/tools/` for `.nupkg` and `.dll` files
 3. **Registration**: Extract types from DLL, find `ITool<T>` implementations
 4. **Execution**: `ToolCommandWrapper<TTool, TSettings>` wraps tools as Spectre.Console.Cli commands
+
+**Shared Utilities** (`AiBiet.Core/Utilities/`):
+- `GitService`: Shared git operations (get diffs, check changes) moved from AiBiet.Tools.Commit to core for cross-tool reuse
+
+### Tool System
+
+**Available Tools**:
+- **Translate** (`AiBiet.Tools.Translate`): AI-powered text translation between languages
+- **Commit** (`AiBiet.Tools.Commit`): Generate conventional commit messages from git diffs
+- **Security** (`AiBiet.Tools.Security` v0.1.0): AI vulnerability scanner with:
+  - Multi-language support (C#, Java, JS/TS, Python, Go, Rust, C++, etc.)
+  - Parallel file processing with throttling (SemaphoreSlim, max 5 concurrent)
+  - Memory-efficient string building (StringBuilder)
+  - Results sorted by severity (Critical > High > Medium > Low)
+  - Enhanced table display with separated rows
+  - File count display (no individual filenames for large projects)
+  - Markdown escaping to prevent console rendering errors
 
 **Critical Fix (v0.3.7)**: Single-file executables bundle dependencies, so tool DLLs can't resolve `AiBiet.Core`. Fixed by hooking `AssemblyLoadContext.Default.Resolving` event to resolve from already-loaded assemblies.
 

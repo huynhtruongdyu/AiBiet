@@ -15,6 +15,7 @@
     <Project Path="src/AiBiet.SharedKernel/AiBiet.SharedKernel.csproj" />
     <Project Path="src/AiBiet.Tools.Coding/AiBiet.Tools.Coding.csproj" />
     <Project Path="src/AiBiet.Tools.Commit/AiBiet.Tools.Commit.csproj" />
+    <Project Path="src/AiBiet.Tools.Security/AiBiet.Tools.Security.csproj" />
     <Project Path="src/AiBiet.Tools.Translate/AiBiet.Tools.Translate.csproj" />
   </Folder>
 </Solution>
