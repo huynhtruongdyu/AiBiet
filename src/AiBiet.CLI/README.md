@@ -230,6 +230,43 @@ aibiet tool source add C:\my-tools
 aibiet tool source remove 1
 ```
 
+### Specialized Tools
+
+The following first-party tools are available and provide specialized AI functionality.
+
+#### Security Scanner (`aibiet security`)
+AI-powered security vulnerability scanner for your codebase.
+```bash
+# Scan current directory
+aibiet security
+
+# Scan staged git changes
+aibiet security --staged
+
+# Scan specific file or directory
+aibiet security ./src/Auth/login.cs
+```
+
+#### Commit Generator (`aibiet commit`)
+Generates conventional commit messages from your git changes.
+```bash
+# Generate from staged changes
+aibiet commit
+
+# Generate from all changes with a scope
+aibiet commit --all --scope ui
+```
+
+#### Translator (`aibiet translate`)
+Translate text between languages using AI.
+```bash
+# Translate text to English (default)
+aibiet translate "Xin chào thế giới"
+
+# Translate to a specific language
+aibiet translate "Hello world" --target ja
+```
+
 ### Developer Utilities
 
 AiBiet includes built-in offline tools for daily development tasks under the `utils` command branch.

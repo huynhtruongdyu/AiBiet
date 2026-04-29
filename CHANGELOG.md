@@ -7,23 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Docs
-- Add project context document for architecture and structure reference
-- Update PROJECT_CONTEXT.md and README files with latest information
-- Add CHANGELOG.md to track version history
+### Added
+- **AiBiet.Tools.Translate v0.1.0**: AI-powered text translation between languages
+- **AiBiet.Tools.Commit v0.2.0**: Generate conventional commit messages from git diffs
+  - Refactored to use shared `GitService` from `AiBiet.Core`
+  - Improved error handling and code cleanup
 
 ## [0.4.0] - 2026-04-29
 
 ### Added
 - **AiBiet.Tools.Security v0.1.0**: AI-powered security vulnerability scanner
   - Multi-language support (C#, Java, JS/TS, Python, Go, Rust, C++, etc.)
+  - Supports git diff scanning (`--staged`, `--unstaged`), file, and directory scanning
+  - Severity filtering and multiple output formats (pretty table, JSON)
+  - Smart file discovery with `.gitignore` support and binary detection
   - Parallel file processing with throttling (SemaphoreSlim, max 5 concurrent)
   - Memory-efficient string building (StringBuilder)
   - Results sorted by severity (Critical > High > Medium > Low)
   - Enhanced table display with separated rows
-  - File count display (no individual filenames for large projects)
   - Markdown escaping to prevent console rendering errors
   - README.md with usage examples
+- **Docs**:
+  - Add project context document for architecture and structure reference
+  - Update PROJECT_CONTEXT.md and README files with latest information
+  - Add CHANGELOG.md to track version history
 - **README.md**: Add Commit and Translate tool documentation
 
 ### Changed

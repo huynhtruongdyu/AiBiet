@@ -167,13 +167,15 @@ public interface ITool<in TSettings> where TSettings : CommandSettings
 **Available Tools**:
 - **Translate** (`AiBiet.Tools.Translate`): AI-powered text translation between languages
 - **Commit** (`AiBiet.Tools.Commit`): Generate conventional commit messages from git diffs
-- **Security** (`AiBiet.Tools.Security` v0.1.0): AI vulnerability scanner with:
+- **Security** (`AiBiet.Tools.Security`): AI vulnerability scanner with:
   - Multi-language support (C#, Java, JS/TS, Python, Go, Rust, C++, etc.)
+  - Supports git diff scanning (`--staged`, `--unstaged`), file, and directory scanning
+  - Severity filtering and multiple output formats (pretty table, JSON)
+  - Smart file discovery with `.gitignore` support and binary detection
   - Parallel file processing with throttling (SemaphoreSlim, max 5 concurrent)
   - Memory-efficient string building (StringBuilder)
   - Results sorted by severity (Critical > High > Medium > Low)
   - Enhanced table display with separated rows
-  - File count display (no individual filenames for large projects)
   - Markdown escaping to prevent console rendering errors
 
 **Critical Fix (v0.3.7)**: Single-file executables bundle dependencies, so tool DLLs can't resolve `AiBiet.Core`. Fixed by hooking `AssemblyLoadContext.Default.Resolving` event to resolve from already-loaded assemblies.
@@ -316,7 +318,7 @@ AiBiet.Tools.*
 
 | Version | Date | Key Changes |
 |---------|------|-------------|
-| v0.4.0 | 2026-04-29 | Add AI Security tool, refactor GitService to Core |
+| v0.4.0 | 2026-04-29 | Add AI Security tool, refactor GitService to Core, Commit v0.2.0 |
 | v0.3.7 | 2026-04-28 | Fixed single-file assembly loading for tools |
 | v0.3.6 | 2026-04-28 | Fixed tool commands DI container registration |
 | v0.3.5 | 2026-04-28 | Handle Gemini 429 errors, improve AI response display |
