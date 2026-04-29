@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Docs
+- Add project context document for architecture and structure reference
+- Update PROJECT_CONTEXT.md and README files with latest information
+- Add CHANGELOG.md to track version history
+
+## [0.4.0] - 2026-04-29
+
 ### Added
 - **AiBiet.Tools.Security v0.1.0**: AI-powered security vulnerability scanner
   - Multi-language support (C#, Java, JS/TS, Python, Go, Rust, C++, etc.)
@@ -17,15 +24,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - File count display (no individual filenames for large projects)
   - Markdown escaping to prevent console rendering errors
   - README.md with usage examples
+- **README.md**: Add Commit and Translate tool documentation
 
 ### Changed
 - **Refactor**: Move `GitService` from `AiBiet.Tools.Commit` to `AiBiet.Core/Utilities/` for cross-tool reuse
 - **Update**: All tools now use shared `GitService` via `AiBiet.Core`
-
-### Docs
-- Add project context document for architecture and structure reference
-- Update PROJECT_CONTEXT.md and README files with latest information
-- Add CHANGELOG.md to track version history
+- **Version**: Update CLI version to v0.4.0
 
 ## [0.3.7] - 2026-04-28
 

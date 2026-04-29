@@ -12,7 +12,7 @@
 - **UI**: Spectre.Console (rich terminal output)
 - **Architecture**: Clean Architecture with 3 layers
 - **Publish Mode**: Single-file self-contained executable
-- **Current Version**: 0.3.7
+- **Current Version**: 0.4.0
 
 ---
 
@@ -316,6 +316,7 @@ AiBiet.Tools.*
 
 | Version | Date | Key Changes |
 |---------|------|-------------|
+| v0.4.0 | 2026-04-29 | Add AI Security tool, refactor GitService to Core |
 | v0.3.7 | 2026-04-28 | Fixed single-file assembly loading for tools |
 | v0.3.6 | 2026-04-28 | Fixed tool commands DI container registration |
 | v0.3.5 | 2026-04-28 | Handle Gemini 429 errors, improve AI response display |
