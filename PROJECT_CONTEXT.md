@@ -12,7 +12,7 @@
 - **UI**: Spectre.Console (rich terminal output)
 - **Architecture**: Clean Architecture with 3 layers
 - **Publish Mode**: Single-file self-contained executable
-- **Current Version**: 0.4.0
+- **Current Version**: 0.5.0
 
 ---
 
@@ -178,6 +178,8 @@ public interface ITool<in TSettings> where TSettings : CommandSettings
   - Enhanced table display with separated rows
   - Markdown escaping to prevent console rendering errors
 
+**Security Enhancement (v0.5.0)**: Transparent encryption for sensitive configuration values (API keys, secrets) using machine-specific AES keys.
+
 **Critical Fix (v0.3.7)**: Single-file executables bundle dependencies, so tool DLLs can't resolve `AiBiet.Core`. Fixed by hooking `AssemblyLoadContext.Default.Resolving` event to resolve from already-loaded assemblies.
 
 ### Configuration (`AiBietConfig.cs`)
@@ -318,6 +320,7 @@ AiBiet.Tools.*
 
 | Version | Date | Key Changes |
 |---------|------|-------------|
+| v0.5.0 | 2026-04-30 | Security enhancements (Config Encryption), Tools sync |
 | v0.4.0 | 2026-04-29 | Add AI Security tool, refactor GitService to Core, Commit v0.2.0 |
 | v0.3.7 | 2026-04-28 | Fixed single-file assembly loading for tools |
 | v0.3.6 | 2026-04-28 | Fixed tool commands DI container registration |

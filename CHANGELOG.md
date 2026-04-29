@@ -5,13 +5,16 @@ All notable changes to the AiBiet project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.5.0] - 2026-04-30
 
 ### Added
-- **AiBiet.Tools.Translate v0.1.0**: AI-powered text translation between languages
-- **AiBiet.Tools.Commit v0.2.0**: Generate conventional commit messages from git diffs
-  - Refactored to use shared `GitService` from `AiBiet.Core`
-  - Improved error handling and code cleanup
+- **Security Enhancements**: 
+  - Added transparent configuration encryption for sensitive data (API Keys, Secret Keys) using AES.
+  - Machine-specific encryption keys derived from environment metadata.
+- **AiBiet.Tools.Translate v0.1.0**: AI-powered text translation between languages.
+- **AiBiet.Tools.Commit v0.2.0**: Generate conventional commit messages from git diffs.
+  - Refactored to use shared `GitService` from `AiBiet.Core`.
+  - Improved error handling and code cleanup.
 
 ## [0.4.0] - 2026-04-29
 

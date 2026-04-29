@@ -20,7 +20,30 @@ internal static class ConfigBootstrapper
         var configDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".aibiet");
         var configPath = Path.Combine(configDir, "config.json");
 
-        var json = JsonSerializer.Serialize(config, _jsonOptions);
+        var configCopy = new AiBietConfig
+        {
+            Schema = config.Schema,
+            DefaultProvider = config.DefaultProvider,
+            ToolsPath = config.ToolsPath
+        };
+
+        foreach (var kvp in config.Providers)
+        {
+            configCopy.Providers[kvp.Key] = new ProviderConfig
+            {
+                ApiUrl = kvp.Value.ApiUrl,
+                ApiKey = ConfigEncryption.Encrypt(kvp.Value.ApiKey),
+                SecretKey = ConfigEncryption.Encrypt(kvp.Value.SecretKey),
+                DefaultModel = kvp.Value.DefaultModel
+            };
+        }
+
+        foreach (var source in config.ToolSources)
+        {
+            configCopy.ToolSources.Add(source);
+        }
+
+        var json = JsonSerializer.Serialize(configCopy, _jsonOptions);
         await File.WriteAllTextAsync(configPath, json).ConfigureAwait(false);
     }
 
@@ -119,6 +142,12 @@ internal static class ConfigBootstrapper
             .Build();
 
         var config = configuration.Get<AiBietConfig>() ?? new AiBietConfig();
+
+        foreach (var pConfig in config.Providers.Values)
+        {
+            pConfig.ApiKey = ConfigEncryption.Decrypt(pConfig.ApiKey);
+            pConfig.SecretKey = ConfigEncryption.Decrypt(pConfig.SecretKey);
+        }
 
         // Ensure ToolsPath is set and exists
         if (string.IsNullOrWhiteSpace(config.ToolsPath))

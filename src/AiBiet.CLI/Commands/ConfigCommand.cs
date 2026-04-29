@@ -17,26 +17,6 @@ internal class ConfigSettings : CommandSettings
     [Description("The AI provider to configure (e.g., ollama, openai, gemini)")]
     public string? Provider { get; set; }
 
-    [CommandOption("--url")]
-    [Description("Set the API model URL")]
-    public string? Url { get; set; }
-
-    [CommandOption("--key")]
-    [Description("Set the API key")]
-    public string? Key { get; set; }
-
-    [CommandOption("--secret")]
-    [Description("Set the secret key")]
-    public string? Secret { get; set; }
-
-    [CommandOption("--model")]
-    [Description("Set the default model for this provider")]
-    public string? Model { get; set; }
-
-    [CommandOption("--default")]
-    [Description("Set this provider as the default")]
-    public bool SetAsDefault { get; set; }
-
     [CommandOption("--clear")]
     [Description("Clear the configuration for the specified provider, or the entire config if no provider is specified")]
     public bool Clear { get; set; }
@@ -44,6 +24,15 @@ internal class ConfigSettings : CommandSettings
 
 internal class ConfigCommand : AsyncCommand<ConfigSettings>
 {
+    private static string RedactKey(string? key)
+    {
+        if (string.IsNullOrEmpty(key))
+            return "[grey]<not set>[/]";
+        return key.Length <= 8
+            ? "********"
+            : $"{key[..4]}********{key[^4..]}";
+    }
+
     private readonly AiBietConfig _config;
 
     public ConfigCommand(AiBietConfig config)
@@ -71,7 +60,8 @@ internal class ConfigCommand : AsyncCommand<ConfigSettings>
             return 0;
         }
 
-        var provider = settings.Provider.ToUpperInvariant();
+        var provider = settings.Provider!.ToUpperInvariant();
+        var providerDisplay = Markup.Escape(provider);
 
         if (settings.Clear)
         {
@@ -82,11 +72,11 @@ internal class ConfigCommand : AsyncCommand<ConfigSettings>
                     _config.DefaultProvider = "";
                 }
                 await ConfigBootstrapper.SaveAsync(_config).ConfigureAwait(false);
-                AnsiConsole.MarkupLine($"[green]Configuration for provider '{provider}' cleared![/]");
+                 AnsiConsole.MarkupLine($"[green]Configuration for provider '{providerDisplay}' cleared![/]");
             }
             else
             {
-                AnsiConsole.MarkupLine($"[yellow]Provider '{provider}' not found in configuration.[/]");
+                 AnsiConsole.MarkupLine($"[yellow]Provider '{providerDisplay}' not found in configuration.[/]");
             }
             return 0;
         }
@@ -97,78 +87,36 @@ internal class ConfigCommand : AsyncCommand<ConfigSettings>
             _config.Providers[provider] = pConfig;
         }
 
-        bool changed = false;
+        AnsiConsole.MarkupLine($"[bold]Configuring provider:[/] [green]{providerDisplay}[/]");
 
-        if (settings.Url != null)
-        {
-            pConfig.ApiUrl = settings.Url;
-            changed = true;
-        }
+        pConfig.ApiUrl = await AnsiConsole.PromptAsync(
+            new TextPrompt<string>("Enter API URL:")
+                .DefaultValue(pConfig.ApiUrl ?? ""), cancellationToken).ConfigureAwait(false);
 
-        if (settings.Key != null)
-        {
-            pConfig.ApiKey = settings.Key;
-            changed = true;
-        }
+        pConfig.ApiKey = await AnsiConsole.PromptAsync(
+            new TextPrompt<string>("Enter API Key:")
+                .DefaultValue(pConfig.ApiKey ?? "")
+                .AllowEmpty()
+                .Secret(), cancellationToken).ConfigureAwait(false);
 
-        if (settings.Secret != null)
-        {
-            pConfig.SecretKey = settings.Secret;
-            changed = true;
-        }
+        pConfig.SecretKey = await AnsiConsole.PromptAsync(
+            new TextPrompt<string>("Enter Secret Key:")
+                .DefaultValue(pConfig.SecretKey ?? "")
+                .AllowEmpty()
+                .Secret(), cancellationToken).ConfigureAwait(false);
 
-        if (settings.Model != null)
-        {
-            pConfig.DefaultModel = settings.Model;
-            changed = true;
-        }
+        pConfig.DefaultModel = await AnsiConsole.PromptAsync(
+            new TextPrompt<string>("Enter Default Model:")
+                .DefaultValue(pConfig.DefaultModel ?? "")
+                .AllowEmpty(), cancellationToken).ConfigureAwait(false);
 
-        if (settings.SetAsDefault)
+        if (await AnsiConsole.ConfirmAsync("Set as default provider?", string.Equals(provider, _config.DefaultProvider, StringComparison.OrdinalIgnoreCase), cancellationToken).ConfigureAwait(false))
         {
             _config.DefaultProvider = provider;
-            changed = true;
         }
 
-        // If no options were provided, run interactive setup
-        if (settings.Url == null && settings.Key == null && settings.Secret == null && !settings.SetAsDefault)
-        {
-            AnsiConsole.MarkupLine($"[bold]Configuring provider:[/] [green]{provider}[/]");
-
-
-            pConfig.ApiUrl = await AnsiConsole.PromptAsync(
-                new TextPrompt<string>("Enter API URL:")
-                    .DefaultValue(pConfig.ApiUrl ?? ""), cancellationToken).ConfigureAwait(false);
-
-
-            pConfig.ApiKey = await AnsiConsole.PromptAsync(
-                new TextPrompt<string>("Enter API Key:")
-                    .DefaultValue(pConfig.ApiKey ?? "")
-                    .AllowEmpty(), cancellationToken).ConfigureAwait(false);
-
-            pConfig.SecretKey = await AnsiConsole.PromptAsync(
-                new TextPrompt<string>("Enter Secret Key:")
-                    .DefaultValue(pConfig.SecretKey ?? "")
-                    .AllowEmpty(), cancellationToken).ConfigureAwait(false);
-
-            pConfig.DefaultModel = await AnsiConsole.PromptAsync(
-                new TextPrompt<string>("Enter Default Model:")
-                    .DefaultValue(pConfig.DefaultModel ?? "")
-                    .AllowEmpty(), cancellationToken).ConfigureAwait(false);
-
-            if (await AnsiConsole.ConfirmAsync("Set as default provider?", string.Equals(provider, _config.DefaultProvider, StringComparison.OrdinalIgnoreCase), cancellationToken).ConfigureAwait(false))
-            {
-                _config.DefaultProvider = provider;
-            }
-
-
-            changed = true;
-        }
-
-        if (changed)
-        {
-            await ConfigBootstrapper.SaveAsync(_config).ConfigureAwait(false);
-            AnsiConsole.MarkupLine($"[green]Configuration updated for {provider}![/]");
-        }
+        await ConfigBootstrapper.SaveAsync(_config).ConfigureAwait(false);
+        AnsiConsole.MarkupLine($"[green]Configuration updated for {providerDisplay}![/]");
 
         return 0;
     }
@@ -183,10 +131,10 @@ internal class ConfigCommand : AsyncCommand<ConfigSettings>
         {
             AnsiConsole.MarkupLine("[bold]Default Provider:[/] [yellow]Not set[/]");
         }
-        else
-        {
-            AnsiConsole.MarkupLine($"[bold]Default Provider:[/] {_config.DefaultProvider}");
-        }
+         else
+         {
+             AnsiConsole.MarkupLine($"[bold]Default Provider:[/] {Markup.Escape(_config.DefaultProvider ?? "")}");
+         }
 
         AnsiConsole.WriteLine();
 
@@ -200,19 +148,19 @@ internal class ConfigCommand : AsyncCommand<ConfigSettings>
             table.AddColumn("SecretKey");
             table.AddColumn("DefaultModel");
 
-            foreach (var kvp in _config.Providers)
-            {
-                var providerName = kvp.Key;
-                var pConfig = kvp.Value;
+             foreach (var kvp in _config.Providers)
+             {
+                 var providerName = kvp.Key;
+                 var pConfig = kvp.Value;
 
-                table.AddRow(
-                    providerName == _config.DefaultProvider ? $"[green]{providerName}[/]" : providerName,
-                    pConfig.ApiUrl ?? "[grey]<not set>[/]",
-                    string.IsNullOrEmpty(pConfig.ApiKey) ? "[grey]<not set>[/]" : "********",
-                    string.IsNullOrEmpty(pConfig.SecretKey) ? "[grey]<not set>[/]" : "********",
-                    pConfig.DefaultModel ?? "[grey]<not set>[/]"
-                );
-            }
+                 table.AddRow(
+                     providerName == _config.DefaultProvider ? $"[green]{Markup.Escape(providerName)}[/]" : Markup.Escape(providerName),
+                     string.IsNullOrEmpty(pConfig.ApiUrl) ? "[grey]<not set>[/]" : Markup.Escape(pConfig.ApiUrl),
+                     RedactKey(pConfig.ApiKey),
+                     RedactKey(pConfig.SecretKey),
+                     string.IsNullOrEmpty(pConfig.DefaultModel) ? "[grey]<not set>[/]" : Markup.Escape(pConfig.DefaultModel)
+                 );
+             }
             AnsiConsole.Write(table);
         }
         else
@@ -229,10 +177,10 @@ internal class ConfigCommand : AsyncCommand<ConfigSettings>
             table.AddColumn("#");
             table.AddColumn("Source");
 
-            for (int i = 0; i < _config.ToolSources.Count; i++)
-            {
-                table.AddRow((i + 1).ToString(System.Globalization.CultureInfo.InvariantCulture), _config.ToolSources[i]);
-            }
+             for (int i = 0; i < _config.ToolSources.Count; i++)
+             {
+                 table.AddRow((i + 1).ToString(System.Globalization.CultureInfo.InvariantCulture), Markup.Escape(_config.ToolSources[i]));
+             }
             AnsiConsole.Write(table);
         }
         else
