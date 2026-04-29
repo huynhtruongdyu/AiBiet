@@ -1,4 +1,4 @@
-# AiBiet.Tools.Commit
+# AiBiet.Tools.Commit (v0.2.0)
 
 AI-powered conventional commit message generator for the AiBiet CLI. Automatically generates commit messages following the [Conventional Commits](https://www.conventionalcommits.org/) specification.
 

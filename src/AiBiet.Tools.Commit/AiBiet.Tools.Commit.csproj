@@ -12,7 +12,7 @@
 
   <PropertyGroup>
     <PackageId>AiBiet.Tools.Commit</PackageId>
-    <Version>0.1.0</Version>
+    <Version>0.2.0</Version>
     <Authors>Duy Huynh</Authors>
     <Description>AI-powered git commit message generator for AiBiet CLI</Description>
     <PackageOutputPath>$(MSBuildProjectDirectory)/../../packages</PackageOutputPath>

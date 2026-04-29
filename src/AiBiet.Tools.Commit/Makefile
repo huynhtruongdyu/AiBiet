@@ -2,7 +2,7 @@
 
 CONFIG := Release
 TFM := net10.0
-VERSION := 0.1.0
+VERSION := 0.2.0
 
 OUT := bin/$(CONFIG)/$(TFM)
 PACKAGES_DIR := ../../packages
@@ -20,5 +20,8 @@ push-github:
 
 push-nuget-test:
 	dotnet nuget push $(PACKAGES_DIR)/AiBiet.Tools.Commit.$(VERSION).nupkg --source nuget-test --api-key [NUGETTEST_PAT]
+
+remove-nuget-test:
+	dotnet nuget delete AiBiet.Tools.Commit $(VERSION) --source nuget-test --api-key [NUGETTEST_PAT]
 
 push: push-github push-nuget-test
